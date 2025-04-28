@@ -3,7 +3,9 @@ import { drizzle } from "drizzle-orm/expo-sqlite";
 
 import * as schema from "@/db/schema/index";
 
-const sqlite = openDatabaseSync("dex.db");
+export const sqlite = openDatabaseSync("dex.db", {
+  enableChangeListener: true,
+});
 
 export const db = drizzle(sqlite, {
   logger: true,

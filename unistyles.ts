@@ -1,12 +1,15 @@
 /* eslint-disable */
 
-import { StyleSheet } from "react-native-unistyles";
+import { UnistylesRegistry } from "react-native-unistyles";
 
 const pokemonTheme = {
   colors: {
-    primary: "#FF0000",
+    background: "#CC0000",
+    red: "#FF0000",
     blue: "#3B4CCA",
     yellow: "#FFDE00",
+    white: "#FFFFFF",
+    black: "#000000",
   },
 };
 
@@ -30,10 +33,11 @@ declare module "react-native-unistyles" {
   export interface UnistylesBreakpoints extends AppBreakpoints {}
 }
 
-StyleSheet.configure({
-  settings: {
+UnistylesRegistry.addBreakpoints(BREAKPOINTS)
+  .addThemes({
+    primary: pokemonTheme,
+  })
+  .addConfig({
+    adaptiveThemes: false,
     initialTheme: "primary",
-  },
-  themes: THEMES,
-  breakpoints: BREAKPOINTS,
-});
+  });

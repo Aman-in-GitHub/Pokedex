@@ -1,14 +1,21 @@
 import React from "react";
-import { Text } from "react-native";
-import { StyleSheet } from "react-native-unistyles";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { Text, View } from "react-native";
+import { useStyles, createStyleSheet } from "react-native-unistyles";
 
 export default function NotFound() {
+  const { styles } = useStyles(stylesheet);
+
   return (
-    <SafeAreaView>
-      <Text>NotFound</Text>
-    </SafeAreaView>
+    <View style={styles.container}>
+      <Text>Not Found</Text>
+    </View>
   );
 }
 
-const styles = StyleSheet.create({});
+const stylesheet = createStyleSheet((theme, rt) => ({
+  container: {
+    flex: 1,
+    paddingTop: rt.insets.top,
+    backgroundColor: theme.colors.background,
+  },
+}));
