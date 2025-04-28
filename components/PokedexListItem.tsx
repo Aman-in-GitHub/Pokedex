@@ -3,7 +3,7 @@ import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { Text, View, Pressable, Vibration, ToastAndroid } from "react-native";
 
-export default function PokedexListItem({ item, styles }) {
+export default function PokedexListItem({ item, styles }: any) {
   const router = useRouter();
 
   return (
@@ -13,8 +13,8 @@ export default function PokedexListItem({ item, styles }) {
           height: 150,
           width: "100%",
           borderRadius: 16,
-          flexDirection: "row",
           overflow: "hidden",
+          flexDirection: "row",
           backgroundColor: item.color,
           paddingHorizontal: 20,
         },
@@ -94,7 +94,7 @@ export default function PokedexListItem({ item, styles }) {
             }}
             transition={100}
             contentFit="cover"
-            source={item.image}
+            source={item.isShiny ? item.shiny || item.image : item.image}
           />
         </>
       ) : (

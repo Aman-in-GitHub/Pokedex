@@ -8,6 +8,13 @@
       "when": 1745782594040,
       "tag": "0000_careless_pandemic",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1745832899272,
+      "tag": "0001_bright_stranger",
+      "breakpoints": true
     }
   ]
 }

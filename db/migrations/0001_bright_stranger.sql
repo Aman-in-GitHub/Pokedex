@@ -1,0 +1,1 @@
+ALTER TABLE `pokemons` ADD `is_shiny` integer DEFAULT false NOT NULL;

@@ -1,5 +1,4 @@
 import { StatusBar } from "expo-status-bar";
-import * as SplashScreen from "expo-splash-screen";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { LegendList, LegendListRef } from "@legendapp/list";
 import { useStyles, createStyleSheet } from "react-native-unistyles";
@@ -17,8 +16,8 @@ import PokedexListItem from "@/components/PokedexListItem";
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 export default function Index() {
-  const legendListRef = useRef<LegendListRef | null>(null);
   const { styles, theme } = useStyles(stylesheet);
+  const legendListRef = useRef<LegendListRef | null>(null);
   const [showScrollToTop, setShowScrollToTop] = useState(false);
 
   function scrollToTop() {
@@ -84,6 +83,7 @@ export default function Index() {
           weight: pokemon.weight,
           stats: pokemon.stats,
           color: pokemon.color,
+          isShiny: pokemon.is_shiny,
           isUnlocked: pokemon.is_unlocked,
         }));
 
@@ -103,10 +103,6 @@ export default function Index() {
   useEffect(() => {
     seedInitialPokedexData();
   }, [seedInitialPokedexData]);
-
-  if (status === "error" || status === "success") {
-    SplashScreen.hideAsync();
-  }
 
   const allPokemons = data?.pages.flatMap((page) => page.pokemons) || [];
 
@@ -143,7 +139,7 @@ export default function Index() {
             bottom: 20,
             right: 20,
             padding: 10,
-            elevation: 5,
+            elevation: 4,
             borderRadius: 1000,
             backgroundColor: theme.colors.black,
           }}

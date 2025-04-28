@@ -16,6 +16,7 @@ const pokemons = sqliteTable("pokemons", {
   weight: integer().notNull(),
   stats: text({ mode: "json" }).notNull(),
   color: text().notNull(),
+  isShiny: integer({ mode: "boolean" }).notNull().default(false),
   isUnlocked: integer({ mode: "boolean" }).notNull().default(false),
 });
 
