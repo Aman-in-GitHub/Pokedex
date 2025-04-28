@@ -16,6 +16,5 @@ const stylesheet = createStyleSheet((theme, rt) => ({
   container: {
     flex: 1,
     paddingTop: rt.insets.top,
-    backgroundColor: theme.colors.background,
   },
 }));

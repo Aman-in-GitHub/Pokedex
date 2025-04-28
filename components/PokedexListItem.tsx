@@ -21,10 +21,10 @@ export default function PokedexListItem({ item, styles }: any) {
         styles.centered,
       ]}
       android_ripple={
-        !item.isUnlocked ? { borderless: false, foreground: true } : null
+        !item.isCaught ? { borderless: false, foreground: true } : null
       }
       onPress={() => {
-        if (item.isUnlocked) {
+        if (item.isCaught) {
           router.navigate({
             pathname: "/detail",
             params: { item: JSON.stringify(item) },
@@ -37,14 +37,11 @@ export default function PokedexListItem({ item, styles }: any) {
             params: { item: JSON.stringify(item) },
           });
 
-          ToastAndroid.show(
-            "Pokémon is yet to be unlocked",
-            ToastAndroid.SHORT,
-          );
+          ToastAndroid.show("Pokémon not caught yet", ToastAndroid.SHORT);
         }
       }}
     >
-      {!item.isUnlocked ? (
+      {!item.isCaught ? (
         <>
           <View style={{ marginLeft: 12 }}>
             <Text style={{ fontFamily: "Solid", letterSpacing: 1 }}>
@@ -92,7 +89,7 @@ export default function PokedexListItem({ item, styles }: any) {
               width: 75,
               height: 75,
             }}
-            transition={100}
+            transition={150}
             contentFit="cover"
             source={item.isShiny ? item.shiny || item.image : item.image}
           />
@@ -103,7 +100,7 @@ export default function PokedexListItem({ item, styles }: any) {
             width: 100,
             height: 100,
           }}
-          transition={100}
+          transition={150}
           contentFit="cover"
           source={require("@/assets/images/locked.png")}
         />

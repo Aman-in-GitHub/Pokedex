@@ -4,12 +4,12 @@ import { UnistylesRegistry } from "react-native-unistyles";
 
 const pokemonTheme = {
   colors: {
-    background: "#CC0000",
     red: "#FF0000",
     blue: "#3B4CCA",
     yellow: "#FFDE00",
     white: "#FFFFFF",
     black: "#000000",
+    mutedBlack: "#666666",
   },
 };
 

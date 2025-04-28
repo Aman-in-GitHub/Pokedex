@@ -1,4 +1,14 @@
 export const PAGE_SIZE = 30;
+export const MAX_STAT_VALUE = 255;
+
+export const POKEMON_STATS = [
+  { key: "hp", label: "HP", color: "#FF5959" },
+  { key: "attack", label: "Attack", color: "#F5AC78" },
+  { key: "defense", label: "Defense", color: "#FAE078" },
+  { key: "special-attack", label: "Sp. Atk", color: "#9DB7F5" },
+  { key: "special-defense", label: "Sp. Def", color: "#A7DB8D" },
+  { key: "speed", label: "Speed", color: "#FA92B2" },
+];
 
 export const POKEMON_TYPES_WITH_COLORS = {
   normal: "#A8A77A",

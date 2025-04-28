@@ -1,15 +1,15 @@
 import { StatusBar } from "expo-status-bar";
+import React, { useState, useRef } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { LegendList, LegendListRef } from "@legendapp/list";
 import { useStyles, createStyleSheet } from "react-native-unistyles";
-import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Text, View, ActivityIndicator, Pressable } from "react-native";
 import Animated, { FadeInDown, FadeOutDown } from "react-native-reanimated";
 
 import { db } from "@/db";
 import * as schema from "@/db/schema/index";
 import { PAGE_SIZE } from "@/lib/constants";
-import POKEMON_DATA from "@/assets/seed.json";
+import Loader from "@/components/Loader";
 import ArrowUpIcon from "@/assets/icons/ArrowUp.svg";
 import PokedexListItem from "@/components/PokedexListItem";
 
@@ -28,93 +28,33 @@ export default function Index() {
     legendListRef.current.scrollToOffset({ animated: true, offset: 0 });
   }
 
-  const {
-    data,
-    status,
-    refetch,
-    hasNextPage,
-    fetchNextPage,
-    isFetchingNextPage,
-  } = useInfiniteQuery({
-    queryKey: ["pokemons"],
-    queryFn: async ({ pageParam = 0 }) => {
-      const results = await db
-        .select()
-        .from(schema.pokemons)
-        .limit(PAGE_SIZE)
-        .offset(pageParam * PAGE_SIZE);
+  const { data, status, hasNextPage, fetchNextPage, isFetchingNextPage } =
+    useInfiniteQuery({
+      queryKey: ["pokemons"],
+      queryFn: async ({ pageParam = 0 }) => {
+        const results = await db
+          .select()
+          .from(schema.pokemons)
+          .limit(PAGE_SIZE)
+          .offset(pageParam * PAGE_SIZE);
 
-      return {
-        pokemons: results,
-        nextPage: results.length === PAGE_SIZE ? pageParam + 1 : undefined,
-      };
-    },
-    getNextPageParam: (lastPage) => lastPage.nextPage,
-    initialPageParam: 0,
-  });
+        if (pageParam === 0) {
+          await new Promise((resolve) => setTimeout(resolve, 1500));
+        }
 
-  const seedInitialPokedexData = useCallback(async () => {
-    try {
-      const data = await db.select().from(schema.pokemons).execute();
-
-      if (data.length >= 991) {
-        return;
-      }
-
-      console.log("Starting data seed");
-
-      const batchSize = 100;
-
-      for (let i = 0; i < POKEMON_DATA.length; i += batchSize) {
-        const batch = POKEMON_DATA.slice(i, i + batchSize);
-
-        const values = batch.map((pokemon) => ({
-          name: pokemon.name,
-          description: pokemon.description,
-          generation: pokemon.generation,
-          cry: pokemon.cry,
-          legacyCry: pokemon.legacy_cry,
-          image: pokemon.image,
-          shiny: pokemon.shiny,
-          extraImages: pokemon.extra_images,
-          evolutions: pokemon.evolutions,
-          types: pokemon.types,
-          height: pokemon.height,
-          weight: pokemon.weight,
-          stats: pokemon.stats,
-          color: pokemon.color,
-          isShiny: pokemon.is_shiny,
-          isUnlocked: pokemon.is_unlocked,
-        }));
-
-        await db.insert(schema.pokemons).values(values).execute();
-      }
-
-      await new Promise((resolve) => setTimeout(resolve, 3000));
-
-      refetch();
-
-      console.log("Pokédex data seeded successfully!");
-    } catch (error) {
-      console.error("Error seeding Pokédex data:", error);
-    }
-  }, [refetch]);
-
-  useEffect(() => {
-    seedInitialPokedexData();
-  }, [seedInitialPokedexData]);
+        return {
+          pokemons: results,
+          nextPage: results.length === PAGE_SIZE ? pageParam + 1 : undefined,
+        };
+      },
+      getNextPageParam: (lastPage) => lastPage.nextPage,
+      initialPageParam: 0,
+    });
 
   const allPokemons = data?.pages.flatMap((page) => page.pokemons) || [];
 
-  if (allPokemons.length === 0 && status !== "pending") {
-    return (
-      <View style={[styles.container, styles.centered]}>
-        <ActivityIndicator size="large" color={theme.colors.red} />
-        <Text style={{ color: theme.colors.red }}>
-          No Pokédex data found. Seeding...
-        </Text>
-      </View>
-    );
+  if (status === "pending") {
+    return <Loader />;
   }
 
   return (
@@ -144,8 +84,8 @@ export default function Index() {
             backgroundColor: theme.colors.black,
           }}
           onPress={scrollToTop}
-          entering={FadeInDown.duration(300)}
-          exiting={FadeOutDown.duration(300)}
+          entering={FadeInDown.duration(500)}
+          exiting={FadeOutDown.duration(500)}
         >
           <ArrowUpIcon fill={theme.colors.white} width={25} height={25} />
         </AnimatedPressable>

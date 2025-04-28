@@ -5,21 +5,38 @@ import {
   useFocusEffect,
   useLocalSearchParams,
 } from "expo-router";
-import React from "react";
+import {
+  Text,
+  View,
+  Pressable,
+  ScrollView,
+  Vibration,
+  Dimensions,
+} from "react-native";
+import Animated, {
+  FadeInLeft,
+  FadeInDown,
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+} from "react-native-reanimated";
 import { Image } from "expo-image";
 import { useAudioPlayer } from "expo-audio";
 import { StatusBar } from "expo-status-bar";
-import Animated from "react-native-reanimated";
-import { Text, View, Pressable, ScrollView } from "react-native";
+import React, { useState, useEffect, useRef } from "react";
 import { useStyles, createStyleSheet } from "react-native-unistyles";
+import Carousel, { ICarouselInstance } from "react-native-reanimated-carousel";
 
 import CryIcon from "@/assets/icons/Cry.svg";
 import ArrowLeftIcon from "@/assets/icons/ArrowLeft.svg";
 import ArrowRightIcon from "@/assets/icons/ArrorRight.svg";
+import { MAX_STAT_VALUE, POKEMON_STATS } from "@/lib/constants";
+import { lightenColor } from "@/lib/utils";
 
+const AnimatedImage = Animated.createAnimatedComponent(Image);
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
-const SECTIONS = ["about", "stats", "moves", "location"];
+const SECTIONS = ["about", "stats", "location"];
 
 type EvolutionType = {
   name: string;
@@ -46,7 +63,7 @@ function EvolutionList({
     >
       <View style={{ alignItems: "center" }}>
         <Image
-          transition={100}
+          transition={150}
           contentFit="cover"
           source={firstPokemon.image}
           style={{ width: 100, height: 100 }}
@@ -82,7 +99,7 @@ function EvolutionList({
 
       <View style={{ alignItems: "center" }}>
         <Image
-          transition={100}
+          transition={150}
           contentFit="cover"
           source={secondPokemon.image}
           style={{ width: 100, height: 100 }}
@@ -102,6 +119,55 @@ function EvolutionList({
   );
 }
 
+function StatBar({ statKey, label, color, value, index }: any) {
+  const progress = useSharedValue(0);
+
+  const percentage = (value / MAX_STAT_VALUE) * 100;
+
+  useEffect(() => {
+    progress.value = withTiming(percentage, { duration: 1000 });
+  }, [percentage, progress]);
+
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      width: `${progress.value}%`,
+      position: "absolute",
+      height: 100,
+      backgroundColor: lightenColor(color, 0.3),
+    };
+  });
+
+  return (
+    <Animated.View
+      style={[
+        {
+          width: "100%",
+          borderRadius: 12,
+          paddingVertical: 10,
+          backgroundColor: lightenColor(color, 0.05),
+          position: "relative",
+          overflow: "hidden",
+        },
+      ]}
+      entering={FadeInDown.duration(500).delay(index * 100)}
+    >
+      <Animated.View style={animatedStyle} />
+
+      <Text
+        style={{
+          fontFamily: "Regular",
+          color: color,
+          fontSize: 16,
+          zIndex: 1000,
+          paddingHorizontal: 16,
+        }}
+      >
+        {label}: {value}
+      </Text>
+    </Animated.View>
+  );
+}
+
 export default function Detail() {
   const router = useRouter();
   const { item } = useLocalSearchParams();
@@ -111,6 +177,8 @@ export default function Detail() {
   const initPlayer = useAudioPlayer(
     pokemon.legacyCry ? pokemon.legacyCry : pokemon.cry,
   );
+  const carouselRef = useRef<ICarouselInstance>(null);
+  const [activeSection, setActiveSection] = useState(SECTIONS[0]);
 
   useFocusEffect(() => {
     initPlayer.play();
@@ -174,20 +242,21 @@ export default function Detail() {
               top: "20%",
             }}
           >
-            <Text
+            <Animated.Text
               style={{
                 color: theme.colors.white,
                 fontSize: 32,
                 fontFamily: "Outline",
                 letterSpacing: 2.75,
               }}
+              entering={FadeInLeft.duration(500)}
             >
               {pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1)}
-            </Text>
+            </Animated.Text>
 
             <View style={{ gap: 8, flexDirection: "row" }}>
               {pokemon.types.map((type: string) => (
-                <View
+                <Animated.View
                   key={`${pokemon.name}-${type}`}
                   style={[
                     {
@@ -198,6 +267,7 @@ export default function Detail() {
                     },
                     styles.centered,
                   ]}
+                  entering={FadeInLeft.duration(500)}
                 >
                   <Text
                     style={{
@@ -208,27 +278,48 @@ export default function Detail() {
                   >
                     {type.charAt(0).toUpperCase() + type.slice(1)}
                   </Text>
-                </View>
+                </Animated.View>
               ))}
             </View>
           </View>
 
-          <Image
+          <Animated.View
             style={{
-              width: 300,
-              height: 300,
-              zIndex: 1000,
               position: "absolute",
               left: "50%",
               bottom: "-12%",
               transform: [{ translateX: "-50%" }],
+              zIndex: 1000,
             }}
-            transition={100}
-            contentFit="cover"
-            source={
-              pokemon.isShiny ? pokemon.shiny || pokemon.image : pokemon.image
-            }
-          />
+          >
+            <Carousel
+              height={300}
+              width={Dimensions.get("screen").width}
+              autoPlay={true}
+              ref={carouselRef}
+              mode="parallax"
+              autoPlayInterval={3000}
+              scrollAnimationDuration={1000}
+              data={[
+                pokemon.isShiny
+                  ? pokemon.shiny || pokemon.image
+                  : pokemon.image,
+                ...pokemon.extraImages,
+              ]}
+              renderItem={({ item }) => (
+                <AnimatedImage
+                  style={{
+                    height: 300,
+                    width: Dimensions.get("screen").width,
+                  }}
+                  source={item}
+                  transition={150}
+                  contentFit="contain"
+                  entering={FadeInDown.duration(500)}
+                />
+              )}
+            />
+          </Animated.View>
         </View>
 
         <View
@@ -249,11 +340,29 @@ export default function Detail() {
             }}
           >
             {SECTIONS.map((section) => (
-              <Pressable key={section}>
+              <Pressable
+                key={section}
+                onPress={() => {
+                  if (section === activeSection) {
+                    return;
+                  }
+
+                  Vibration.vibrate(50);
+                  setActiveSection(section);
+                }}
+              >
                 <Text
                   style={{
-                    fontFamily: "Regular",
-                    color: theme.colors.black,
+                    fontSize: 20,
+                    letterSpacing: 1.5,
+                    fontFamily: "Solid",
+                    color:
+                      section === activeSection
+                        ? pokemon.color
+                        : theme.colors.mutedBlack,
+                    textDecorationLine:
+                      section === activeSection ? "underline" : "none",
+                    textDecorationStyle: "solid",
                   }}
                 >
                   {section.charAt(0).toUpperCase() + section.slice(1)}
@@ -262,109 +371,157 @@ export default function Detail() {
             ))}
           </View>
 
-          <ScrollView
-            style={{
-              gap: 4,
-              marginTop: 4,
-            }}
-            showsVerticalScrollIndicator={false}
-          >
-            {pokemon.description
-              .slice(0, 4)
-              .map((desc: string, index: number) => {
-                const indexStr: string = index.toString();
+          {activeSection === "about" && (
+            <ScrollView showsVerticalScrollIndicator={false}>
+              {pokemon.description
+                .slice(0, 4)
+                .map((desc: string, index: number) => {
+                  const indexStr: string = index.toString();
 
-                return (
+                  return (
+                    <Animated.Text
+                      key={indexStr}
+                      style={{
+                        marginTop: 4,
+                        fontFamily: "Regular",
+                      }}
+                      entering={FadeInDown.duration(500).delay(index * 100)}
+                    >
+                      {desc}
+                    </Animated.Text>
+                  );
+                })}
+
+              <Animated.View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginVertical: 12,
+                  paddingVertical: 12,
+                  paddingHorizontal: 20,
+                  borderWidth: 2,
+                  borderRadius: 12,
+                  borderColor: pokemon.color,
+                }}
+                entering={FadeInDown.duration(1000)}
+              >
+                <View>
                   <Text
-                    key={indexStr}
                     style={{
                       fontFamily: "Regular",
+                      color: theme.colors.mutedBlack,
                     }}
                   >
-                    {desc}
+                    Height
                   </Text>
-                );
-              })}
+                  <Text style={{ fontFamily: "Regular" }}>
+                    {(parseInt(pokemon.height) / 10).toFixed(2)} m
+                  </Text>
+                </View>
+                <View>
+                  <Text
+                    style={{
+                      fontFamily: "Regular",
+                      color: theme.colors.mutedBlack,
+                    }}
+                  >
+                    Weight
+                  </Text>
+                  <Text style={{ fontFamily: "Regular" }}>
+                    {(parseInt(pokemon.weight) / 10).toFixed(2)} kg
+                  </Text>
+                </View>
+                <View>
+                  <Text
+                    style={{
+                      fontFamily: "Regular",
+                      color: theme.colors.mutedBlack,
+                    }}
+                  >
+                    Generation
+                  </Text>
+                  <Text
+                    style={{
+                      fontFamily: "Regular",
+                      letterSpacing: 1,
+                    }}
+                  >
+                    Gen - {pokemon.generation.split("-")[1]?.toUpperCase()}
+                  </Text>
+                </View>
+              </Animated.View>
 
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                alignItems: "center",
-                marginVertical: 12,
-                paddingVertical: 12,
-                paddingHorizontal: 20,
-                borderWidth: 1.5,
-                borderRadius: 12,
-                borderColor: pokemon.color,
-              }}
-            >
-              <View>
-                <Text style={{ fontFamily: "Regular" }}>Height</Text>
-                <Text style={{ fontFamily: "Regular" }}>
-                  {(parseInt(pokemon.height) / 10).toFixed(2)} m |{" "}
-                  {((parseInt(pokemon.height) / 10) * 3.28084).toFixed(2)} ft
-                </Text>
-              </View>
-              <View>
-                <Text style={{ fontFamily: "Regular", textAlign: "right" }}>
-                  Weight
-                </Text>
-                <Text style={{ fontFamily: "Regular", textAlign: "right" }}>
-                  {(parseInt(pokemon.weight) / 10).toFixed(2)} kg |{" "}
-                  {((parseInt(pokemon.weight) / 10) * 2.20462).toFixed(2)} lbs
-                </Text>
-              </View>
-            </View>
-
-            {pokemon.evolutions.length > 1 && (
-              <>
-                <EvolutionList
-                  firstPokemon={pokemon.evolutions[0]}
-                  secondPokemon={pokemon.evolutions[1]}
-                  color={pokemon.color}
-                />
-
-                {pokemon.evolutions.length > 2 && (
+              {pokemon.evolutions.length > 1 && (
+                <>
                   <EvolutionList
-                    firstPokemon={pokemon.evolutions[1]}
-                    secondPokemon={pokemon.evolutions[2]}
+                    firstPokemon={pokemon.evolutions[0]}
+                    secondPokemon={pokemon.evolutions[1]}
                     color={pokemon.color}
                   />
-                )}
-              </>
-            )}
 
+                  {pokemon.evolutions.length > 2 && (
+                    <EvolutionList
+                      firstPokemon={pokemon.evolutions[1]}
+                      secondPokemon={pokemon.evolutions[2]}
+                      color={pokemon.color}
+                    />
+                  )}
+                </>
+              )}
+
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  paddingVertical: 8,
+                }}
+              >
+                <Link
+                  href={`https://bulbapedia.bulbagarden.net/wiki/${pokemon.name}`}
+                >
+                  <Text
+                    style={{
+                      fontFamily: "Regular",
+                      color: pokemon.color,
+                      textDecorationLine: "underline",
+                    }}
+                  >
+                    Bulbapedia wiki
+                  </Text>
+                </Link>
+
+                <CryIcon
+                  width={32}
+                  height={32}
+                  fill={pokemon.color}
+                  onPress={() => cryPlayer.play()}
+                />
+              </View>
+            </ScrollView>
+          )}
+
+          {activeSection === "stats" && (
             <View
               style={{
-                flexDirection: "row",
+                flex: 1,
+                paddingVertical: 6,
                 justifyContent: "space-between",
-                alignItems: "center",
-                paddingBottom: 8,
               }}
             >
-              <Link
-                href={`https://bulbapedia.bulbagarden.net/wiki/${pokemon.name}`}
-              >
-                <Text
-                  style={{
-                    fontFamily: "Regular",
-                    color: pokemon.color,
-                    textDecorationLine: "underline",
-                  }}
-                >
-                  Bulbapedia wiki
-                </Text>
-              </Link>
-
-              <CryIcon
-                width={32}
-                height={32}
-                fill={pokemon.color}
-                onPress={() => cryPlayer.play()}
-              />
+              {POKEMON_STATS.map(({ key, label, color }, index) => (
+                <StatBar
+                  key={key}
+                  statKey={key}
+                  label={label}
+                  color={color}
+                  value={pokemon.stats[key]}
+                  index={index}
+                />
+              ))}
             </View>
-          </ScrollView>
+          )}
         </View>
       </View>
     </>
