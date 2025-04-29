@@ -29,7 +29,13 @@
       "output": "static",
       "favicon": "./assets/images/favicon.png"
     },
-    "plugins": ["expo-router", "expo-sqlite", "expo-audio"],
+    "plugins": [
+      "expo-router",
+      "expo-sqlite",
+      "expo-audio",
+      "react-native-vision-camera",
+      "@maplibre/maplibre-react-native"
+    ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true

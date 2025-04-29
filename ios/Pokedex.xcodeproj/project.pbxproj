@@ -14,7 +14,7 @@
 		96905EF65AED1B983A6B3ABC /* libPods-Pokedex.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 58EEBF8E8E6FB1BC6CAF49B5 /* libPods-Pokedex.a */; };
 		B18059E884C0ABDD17F3DC3D /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAC715A2D49A985799AEE119 /* ExpoModulesProvider.swift */; };
 		BB2F792D24A3F905000567C9 /* Expo.plist in Resources */ = {isa = PBXBuildFile; fileRef = BB2F792C24A3F905000567C9 /* Expo.plist */; };
-		DEC60AED47C74C458056BFC0 /* noop-file.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9948A6326AE344988502F4E0 /* noop-file.swift */; };
+		00E65E704C464E0B89619A19 /* noop-file.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7E29000093D46E3A52EE83A /* noop-file.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -31,8 +31,8 @@
 		BB2F792C24A3F905000567C9 /* Expo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Expo.plist; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		FAC715A2D49A985799AEE119 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-Pokedex/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
-		9948A6326AE344988502F4E0 /* noop-file.swift */ = {isa = PBXFileReference; name = "noop-file.swift"; path = "Pokedex/noop-file.swift"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.swift; explicitFileType = undefined; includeInIndex = 0; };
-		0FCDA338F89548C3BEBB817B /* Pokedex-Bridging-Header.h */ = {isa = PBXFileReference; name = "Pokedex-Bridging-Header.h"; path = "Pokedex/Pokedex-Bridging-Header.h"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; explicitFileType = undefined; includeInIndex = 0; };
+		F7E29000093D46E3A52EE83A /* noop-file.swift */ = {isa = PBXFileReference; name = "noop-file.swift"; path = "Pokedex/noop-file.swift"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.swift; explicitFileType = undefined; includeInIndex = 0; };
+		74466D07DC5E4E488B0D3CDC /* Pokedex-Bridging-Header.h */ = {isa = PBXFileReference; name = "Pokedex-Bridging-Header.h"; path = "Pokedex/Pokedex-Bridging-Header.h"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; explicitFileType = undefined; includeInIndex = 0; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -57,8 +57,8 @@
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				13B07FB71A68108700A75B9A /* main.m */,
 				AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */,
-				9948A6326AE344988502F4E0 /* noop-file.swift */,
-				0FCDA338F89548C3BEBB817B /* Pokedex-Bridging-Header.h */,
+				F7E29000093D46E3A52EE83A /* noop-file.swift */,
+				74466D07DC5E4E488B0D3CDC /* Pokedex-Bridging-Header.h */,
 			);
 			name = Pokedex;
 			sourceTree = "<group>";
@@ -149,6 +149,7 @@
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				800E24972A6A228C8D4807E9 /* [CP] Copy Pods Resources */,
+				15A9F3D51A934F1DB1179F87 /* Remove signature files (Xcode workaround) */,
 			);
 			buildRules = (
 			);
@@ -198,7 +199,7 @@
 				BB2F792D24A3F905000567C9 /* Expo.plist in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */,
-				8FBB8AFD579B46C08F9FDC89 /* Pokedex-Bridging-Header.h in Resources */,
+				9C034D69E507422AB9977897 /* Pokedex-Bridging-Header.h in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -264,6 +265,23 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Pokedex/Pods-Pokedex-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
+		15A9F3D51A934F1DB1179F87 /* Remove signature files (Xcode workaround) */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			name = "Remove signature files (Xcode workaround)";
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			shellPath = /bin/sh;
+			shellScript = "
+          echo \"Remove signature files (Xcode workaround)\";
+          rm -rf \"$CONFIGURATION_BUILD_DIR/MapLibre.xcframework-ios.signature\";
+        ";
+		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -274,7 +292,7 @@
 				13B07FBC1A68108700A75B9A /* AppDelegate.mm in Sources */,
 				13B07FC11A68108700A75B9A /* main.m in Sources */,
 				B18059E884C0ABDD17F3DC3D /* ExpoModulesProvider.swift in Sources */,
-				DEC60AED47C74C458056BFC0 /* noop-file.swift in Sources */,
+				00E65E704C464E0B89619A19 /* noop-file.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -335,6 +353,7 @@
 				VERSIONING_SYSTEM = "apple-generic";
 				TARGETED_DEVICE_FAMILY = "1,2";
 				SWIFT_OBJC_BRIDGING_HEADER = Pokedex/Pokedex-Bridging-Header.h;
+				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = "arm64";
 				CODE_SIGN_ENTITLEMENTS = Pokedex/Pokedex.entitlements;
 			};
 			name = Release;

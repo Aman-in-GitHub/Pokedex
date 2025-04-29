@@ -1,5 +1,6 @@
-export const PAGE_SIZE = 30;
+export const PAGE_SIZE = 50;
 export const MAX_STAT_VALUE = 255;
+export const MAP_STYLE_URL = "https://tiles.openfreemap.org/styles/liberty";
 
 export const POKEMON_STATS = [
   { key: "hp", label: "HP", color: "#FF5959" },

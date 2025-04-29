@@ -43,7 +43,7 @@ export default function PokedexListItem({ item, styles }: any) {
     >
       {!item.isCaught ? (
         <>
-          <View style={{ marginLeft: 12 }}>
+          <View style={{ marginLeft: 16 }}>
             <Text style={{ fontFamily: "Solid", letterSpacing: 1 }}>
               {item.name.charAt(0).toUpperCase() + item.name.slice(1)}
             </Text>
@@ -54,9 +54,9 @@ export default function PokedexListItem({ item, styles }: any) {
                   key={`${item.name}-${type}`}
                   style={[
                     {
+                      borderRadius: 1000,
                       paddingVertical: 4,
                       paddingHorizontal: 16,
-                      borderRadius: 1000,
                       backgroundColor: "rgba(255, 255, 255, 0.2)",
                     },
                     styles.centered,

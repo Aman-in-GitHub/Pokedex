@@ -34,6 +34,7 @@ export default function RootLayout() {
   }
 
   const [loaded, error] = useFonts({
+    Game: require("../assets/fonts/Pokemon-Game.ttf"),
     Solid: require("../assets/fonts/Pokemon-Solid.ttf"),
     Outline: require("../assets/fonts/Pokemon-Hollow.ttf"),
     Regular: require("../assets/fonts/Poppins-Regular.ttf"),

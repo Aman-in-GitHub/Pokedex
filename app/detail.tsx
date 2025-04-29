@@ -24,14 +24,15 @@ import { Image } from "expo-image";
 import { useAudioPlayer } from "expo-audio";
 import { StatusBar } from "expo-status-bar";
 import React, { useState, useEffect, useRef } from "react";
+import { Camera, MapView } from "@maplibre/maplibre-react-native";
 import { useStyles, createStyleSheet } from "react-native-unistyles";
 import Carousel, { ICarouselInstance } from "react-native-reanimated-carousel";
 
+import { lightenColor } from "@/lib/utils";
 import CryIcon from "@/assets/icons/Cry.svg";
 import ArrowLeftIcon from "@/assets/icons/ArrowLeft.svg";
 import ArrowRightIcon from "@/assets/icons/ArrorRight.svg";
-import { MAX_STAT_VALUE, POKEMON_STATS } from "@/lib/constants";
-import { lightenColor } from "@/lib/utils";
+import { MAP_STYLE_URL, MAX_STAT_VALUE, POKEMON_STATS } from "@/lib/constants";
 
 const AnimatedImage = Animated.createAnimatedComponent(Image);
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
@@ -143,13 +144,15 @@ function StatBar({ statKey, label, color, value, index }: any) {
         {
           width: "100%",
           borderRadius: 12,
-          paddingVertical: 10,
+          paddingVertical: 8,
           backgroundColor: lightenColor(color, 0.05),
           position: "relative",
           overflow: "hidden",
         },
       ]}
-      entering={FadeInDown.duration(500).delay(index * 100)}
+      entering={FadeInDown.duration(500)
+        .delay(index * 100)
+        .springify()}
     >
       <Animated.View style={animatedStyle} />
 
@@ -175,7 +178,11 @@ export default function Detail() {
   const { styles, theme } = useStyles(stylesheet);
   const cryPlayer = useAudioPlayer(pokemon.cry);
   const initPlayer = useAudioPlayer(
-    pokemon.legacyCry ? pokemon.legacyCry : pokemon.cry,
+    pokemon.name === "pikachu"
+      ? require("@/assets/sound/its-pikachu.mp3")
+      : pokemon.legacyCry
+        ? pokemon.legacyCry
+        : pokemon.cry,
   );
   const carouselRef = useRef<ICarouselInstance>(null);
   const [activeSection, setActiveSection] = useState(SECTIONS[0]);
@@ -225,11 +232,11 @@ export default function Detail() {
               position: "absolute",
               right: "5%",
               top: "5%",
-              color: theme.colors.white,
               fontSize: 75,
               opacity: 0.1,
               fontFamily: "Solid",
               letterSpacing: 6,
+              color: theme.colors.white,
             }}
           >
             #{pokemon.id}
@@ -249,7 +256,7 @@ export default function Detail() {
                 fontFamily: "Outline",
                 letterSpacing: 2.75,
               }}
-              entering={FadeInLeft.duration(500)}
+              entering={FadeInLeft.duration(500).springify()}
             >
               {pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1)}
             </Animated.Text>
@@ -267,7 +274,7 @@ export default function Detail() {
                     },
                     styles.centered,
                   ]}
-                  entering={FadeInLeft.duration(500)}
+                  entering={FadeInLeft.duration(500).springify()}
                 >
                   <Text
                     style={{
@@ -287,7 +294,7 @@ export default function Detail() {
             style={{
               position: "absolute",
               left: "50%",
-              bottom: "-12%",
+              bottom: "-16%",
               transform: [{ translateX: "-50%" }],
               zIndex: 1000,
             }}
@@ -298,7 +305,7 @@ export default function Detail() {
               autoPlay={true}
               ref={carouselRef}
               mode="parallax"
-              autoPlayInterval={3000}
+              autoPlayInterval={2000}
               scrollAnimationDuration={1000}
               data={[
                 pokemon.isShiny
@@ -315,7 +322,7 @@ export default function Detail() {
                   source={item}
                   transition={150}
                   contentFit="contain"
-                  entering={FadeInDown.duration(500)}
+                  entering={FadeInDown.duration(500).springify()}
                 />
               )}
             />
@@ -385,7 +392,9 @@ export default function Detail() {
                         marginTop: 4,
                         fontFamily: "Regular",
                       }}
-                      entering={FadeInDown.duration(500).delay(index * 100)}
+                      entering={FadeInDown.duration(500)
+                        .delay(index * 100)
+                        .springify()}
                     >
                       {desc}
                     </Animated.Text>
@@ -404,7 +413,7 @@ export default function Detail() {
                   borderRadius: 12,
                   borderColor: pokemon.color,
                 }}
-                entering={FadeInDown.duration(1000)}
+                entering={FadeInDown.duration(1000).springify()}
               >
                 <View>
                   <Text
@@ -496,7 +505,10 @@ export default function Detail() {
                   width={32}
                   height={32}
                   fill={pokemon.color}
-                  onPress={() => cryPlayer.play()}
+                  onPress={() => {
+                    cryPlayer.seekTo(0);
+                    cryPlayer.play();
+                  }}
                 />
               </View>
             </ScrollView>
@@ -507,6 +519,7 @@ export default function Detail() {
               style={{
                 flex: 1,
                 paddingVertical: 6,
+                paddingBottom: 12,
                 justifyContent: "space-between",
               }}
             >
@@ -521,6 +534,83 @@ export default function Detail() {
                 />
               ))}
             </View>
+          )}
+
+          {activeSection === "location" && (
+            <ScrollView
+              style={{
+                flex: 1,
+                paddingTop: 6,
+              }}
+              showsVerticalScrollIndicator={false}
+            >
+              <Animated.View
+                style={{
+                  borderRadius: 12,
+                  overflow: "hidden",
+                }}
+                entering={FadeInDown.duration(500).springify()}
+              >
+                <MapView
+                  style={{
+                    height: 200,
+                    width: "100%",
+                  }}
+                  mapStyle={MAP_STYLE_URL}
+                  attributionEnabled={false}
+                  preferredFramesPerSecond={60}
+                >
+                  <Camera
+                    pitch={75}
+                    zoomLevel={15}
+                    animationMode="flyTo"
+                    animationDuration={2000}
+                    defaultSettings={{
+                      centerCoordinate: [139.72921376408274, 35.66076485905221],
+                    }}
+                  />
+                </MapView>
+              </Animated.View>
+
+              <Animated.View
+                style={{
+                  marginVertical: 8,
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                }}
+                entering={FadeInDown.duration(500).springify().delay(150)}
+              >
+                <Text
+                  style={{
+                    fontFamily: "Regular",
+                  }}
+                >
+                  Time: 2:30 pm
+                </Text>
+                <Text
+                  style={{
+                    fontFamily: "Regular",
+                  }}
+                >
+                  Date: Monday 23rd February
+                </Text>
+              </Animated.View>
+
+              <AnimatedImage
+                style={{
+                  height: 200,
+                  width: "100%",
+                  marginBottom: 20,
+                  borderRadius: 12,
+                }}
+                source={
+                  "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT9l2T0bmKHoGHLrgU4LMBNqgrDR59DEL-MlA&s"
+                }
+                transition={150}
+                contentFit="cover"
+                entering={FadeInDown.duration(500).springify().delay(300)}
+              />
+            </ScrollView>
           )}
         </View>
       </View>
