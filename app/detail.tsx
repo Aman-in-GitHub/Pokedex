@@ -3,7 +3,6 @@ import {
   router,
   useFocusEffect,
   useLocalSearchParams,
-  Stack,
 } from "expo-router";
 import {
   Text,
@@ -27,7 +26,6 @@ import { Camera, MapView } from "@maplibre/maplibre-react-native";
 import { useStyles, createStyleSheet } from "react-native-unistyles";
 import Carousel, { ICarouselInstance } from "react-native-reanimated-carousel";
 
-import { formatISODate, lightenColor } from "@/lib/utils";
 import {
   MAP_STYLE_URL,
   MAX_STAT_VALUE,
@@ -36,6 +34,7 @@ import {
 } from "@/lib/constants";
 import MusicIcon from "@/assets/icons/Music.svg";
 import ArrowIcon from "@/assets/icons/Arrow.svg";
+import { formatISODate, lightenColor } from "@/lib/utils";
 
 const AnimatedImage = Animated.createAnimatedComponent(Image);
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
@@ -123,7 +122,7 @@ function EvolutionList({
   );
 }
 
-function StatBar({ statKey, label, color, value, index }: any) {
+function StatBar({ label, color, value, index }: any) {
   const progress = useSharedValue(0);
 
   const percentage = (value / MAX_STAT_VALUE) * 100;
@@ -175,9 +174,13 @@ function StatBar({ statKey, label, color, value, index }: any) {
 }
 
 export default function Detail() {
-  const { item } = useLocalSearchParams();
-  const pokemon = JSON.parse(item as string);
   const { styles, theme } = useStyles(stylesheet);
+  const { item, isFirstTime = "false" } = useLocalSearchParams();
+  const pokemon = JSON.parse(item as string);
+  const playCaughtSound = JSON.parse(isFirstTime as string);
+  const pokemonImagesRef = useRef<ICarouselInstance>(null);
+  const caughtImagesRef = useRef<ICarouselInstance>(null);
+  const [activeSection, setActiveSection] = useState(SECTIONS[0]);
   const cryPlayer = useAudioPlayer(pokemon.cry);
   const initPlayer = useAudioPlayer(
     pokemon.name === "pikachu"
@@ -188,17 +191,25 @@ export default function Detail() {
           ? pokemon.legacyCry
           : pokemon.cry,
   );
-  const carouselRef = useRef<ICarouselInstance>(null);
-  const [activeSection, setActiveSection] = useState(SECTIONS[0]);
+  const shinyPlayer = useAudioPlayer(require("@/assets/sound/shiny.mp3"));
+  const caughtPlayer = useAudioPlayer(require("@/assets/sound/caught.mp3"));
 
   useFocusEffect(() => {
-    initPlayer.play();
+    if (playCaughtSound) {
+      if (pokemon.isShiny) {
+        shinyPlayer.seekTo(0);
+        shinyPlayer.play();
+      } else {
+        caughtPlayer.seekTo(0);
+        caughtPlayer.play();
+      }
+    } else {
+      initPlayer.play();
+    }
   });
 
   return (
     <>
-      <Stack.Screen options={{ headerShown: false }} />
-
       <StatusBar style="light" animated={true} translucent={true} />
 
       <AnimatedPressable
@@ -310,11 +321,11 @@ export default function Detail() {
             }}
           >
             <Carousel
-              height={300}
+              height={350}
               width={Dimensions.get("screen").width}
               autoPlay={true}
-              ref={carouselRef}
               mode="parallax"
+              ref={pokemonImagesRef}
               autoPlayInterval={3000}
               scrollAnimationDuration={1000}
               data={[
@@ -326,7 +337,7 @@ export default function Detail() {
               renderItem={({ item }) => (
                 <AnimatedImage
                   style={{
-                    height: 300,
+                    height: 350,
                     width: Dimensions.get("screen").width,
                   }}
                   source={item}
@@ -358,6 +369,9 @@ export default function Detail() {
           >
             {SECTIONS.map((section) => (
               <Pressable
+                style={{
+                  zIndex: 100000,
+                }}
                 key={section}
                 onPress={() => {
                   if (section === activeSection) {
@@ -630,19 +644,31 @@ export default function Detail() {
                 </Text>
               </Animated.View>
 
-              <AnimatedImage
+              <Carousel
+                height={200}
+                width={Dimensions.get("screen").width}
+                autoPlay={pokemon.caughtImages.length > 1}
                 style={{
-                  height: 200,
-                  width: "100%",
                   marginBottom: 20,
-                  borderRadius: 12,
                 }}
-                source={
-                  "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT9l2T0bmKHoGHLrgU4LMBNqgrDR59DEL-MlA&s"
-                }
-                transition={150}
-                contentFit="cover"
-                entering={FadeInDown.duration(500).springify().delay(300)}
+                ref={caughtImagesRef}
+                autoPlayInterval={3000}
+                enabled={pokemon.caughtImages.length > 1}
+                scrollAnimationDuration={1000}
+                data={[...pokemon.caughtImages]}
+                renderItem={({ item }) => (
+                  <AnimatedImage
+                    style={{
+                      height: 200,
+                      width: "90%",
+                      borderRadius: 12,
+                    }}
+                    source={item}
+                    transition={150}
+                    contentFit="cover"
+                    entering={FadeInDown.duration(500).springify().delay(300)}
+                  />
+                )}
               />
             </ScrollView>
           )}

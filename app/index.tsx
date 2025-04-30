@@ -24,7 +24,9 @@ import { Pressable, Text, ToastAndroid, Vibration, View } from "react-native";
 
 import { db } from "@/db";
 import * as schema from "@/db/schema/index";
+import GalleryIcon from "@/assets/icons/Gallery.svg";
 import { savePokemonToDex, verifyWithPokedex } from "@/lib/utils";
+import { TEMP_DIRECTORY } from "@/lib/constants";
 
 Animated.addWhitelistedNativeProps({
   zoom: true,
@@ -33,10 +35,10 @@ const AnimatedCamera = Animated.createAnimatedComponent(Camera);
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 export default function Index() {
+  const { styles, theme } = useStyles(stylesheet);
   const cameraRef = useRef<Camera>(null);
   const device = useCameraDevice("back") as CameraDevice;
   const zoom = useSharedValue(device.neutralZoom);
-  const { styles, theme } = useStyles(stylesheet);
   const [isCatching, setIsCatching] = useState(false);
   const catchPlayer = useAudioPlayer(require("@/assets/sound/catch.mp3"));
   const runawayPlayer = useAudioPlayer(require("@/assets/sound/runaway.mp3"));
@@ -82,9 +84,9 @@ export default function Index() {
     catchPlayer.play();
 
     try {
-      const savedPath = await savePokemonToDex(photo.path);
+      const tempPath = await savePokemonToDex(photo.path, TEMP_DIRECTORY);
 
-      const res = await verifyWithPokedex(savedPath || "");
+      const res = await verifyWithPokedex(tempPath || "");
 
       if (
         !res ||
@@ -113,7 +115,7 @@ export default function Index() {
         params: {
           item: JSON.stringify(pokemon),
           shinyStatus: JSON.stringify(isShiny),
-          caughtImage: savedPath,
+          tempCaughtImage: tempPath,
         },
       });
     } catch (error) {
@@ -308,17 +310,26 @@ export default function Index() {
           justifyContent: "space-between",
         }}
       >
-        <View
+        <Pressable
           style={[
             {
               width: 60,
               height: 60,
               borderRadius: 1000,
-              backgroundColor: theme.colors.mutedBlack,
+              backgroundColor: theme.colors.yellow,
             },
             styles.shadow,
+            styles.centered,
           ]}
-        />
+          onPress={() => {
+            Vibration.vibrate(50);
+
+            router.navigate("/gallery");
+          }}
+          disabled={isCatching}
+        >
+          <GalleryIcon width={32} height={32} fill={theme.colors.black} />
+        </Pressable>
 
         <View
           style={{
@@ -362,11 +373,10 @@ export default function Index() {
                 width: 150,
                 height: 60,
                 borderRadius: 6,
-                alignItems: "center",
-                justifyContent: "center",
                 backgroundColor: theme.colors.green,
               },
               styles.shadow,
+              styles.centered,
             ]}
             disabled={isCatching}
             onPress={() => {
@@ -405,7 +415,7 @@ export default function Index() {
               height: 60,
               width: 60,
             }}
-            transition={300}
+            transition={150}
             contentFit="contain"
             source={
               isCatching

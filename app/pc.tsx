@@ -1,5 +1,6 @@
 import { Stack } from "expo-router";
 import { count, eq } from "drizzle-orm";
+import { Vibration } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import React, { useState, useRef } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
@@ -14,7 +15,6 @@ import * as schema from "@/db/schema/index";
 import { PAGE_SIZE } from "@/lib/constants";
 import UpIcon from "@/assets/icons/Up.svg";
 import PokedexListItem from "@/components/PokedexListItem";
-import { Vibration } from "react-native";
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
@@ -74,6 +74,8 @@ export default function YourPc() {
       <>
         <Stack.Screen options={{ headerShown: false }} />
 
+        <StatusBar style="dark" animated={true} translucent={true} />
+
         <Loader />
       </>
     );
@@ -81,14 +83,13 @@ export default function YourPc() {
 
   return (
     <View style={styles.container}>
-      <Stack.Screen options={{ headerShown: false }} />
-
       <StatusBar style="dark" animated={true} translucent={true} />
 
       <View
         style={{
           paddingVertical: 16,
           flexDirection: "row",
+          alignItems: "center",
           justifyContent: "space-between",
         }}
       >

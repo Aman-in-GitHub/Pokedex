@@ -14,13 +14,14 @@ export function lightenColor(color: string, opacity = 0.2) {
 
 export async function savePokemonToDex(
   mediaPath: string,
+  directory: string,
 ): Promise<string | null> {
   try {
     const sourcePath = mediaPath.startsWith("file://")
       ? mediaPath
       : `file://${mediaPath}`;
     const filename = `${Date.now()}.jpg`;
-    const targetDirectory = `${FileSystem.documentDirectory}caught/`;
+    const targetDirectory = `${FileSystem.documentDirectory}${directory}/`;
 
     const dirInfo = await FileSystem.getInfoAsync(targetDirectory);
     if (!dirInfo.exists) {
@@ -115,4 +116,37 @@ export function formatISODate(isoString: string) {
     time,
     date: dateFormatted,
   };
+}
+
+export function sanitizeForSpeech(text: string) {
+  return text
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^A-Za-z0-9\s.,!?']/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+export async function cleanDirectory(directory: string) {
+  try {
+    const targetDirectory = `${FileSystem.documentDirectory}${directory}/`;
+
+    const dirInfo = await FileSystem.getInfoAsync(targetDirectory);
+
+    if (dirInfo.exists) {
+      const files = await FileSystem.readDirectoryAsync(targetDirectory);
+
+      const deletionPromises = files.map((file) =>
+        FileSystem.deleteAsync(`${targetDirectory}${file}`, {
+          idempotent: true,
+        }),
+      );
+
+      await Promise.all(deletionPromises);
+
+      console.log(`Cleaned up ${files.length} files from ${directory}`);
+    }
+  } catch (error) {
+    console.error(`Error cleaning up temp directory: ${error}`);
+  }
 }

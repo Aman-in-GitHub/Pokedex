@@ -14,6 +14,8 @@ import { db, sqlite } from "@/db";
 import * as schema from "@/db/schema/index";
 import migrations from "@/db/migrations/migrations";
 import POKEMON_DATA from "@/assets/seed.json";
+import { cleanDirectory } from "@/lib/utils";
+import { TEMP_DIRECTORY } from "@/lib/constants";
 
 export { ErrorBoundary } from "expo-router";
 
@@ -82,6 +84,9 @@ export default function RootLayout() {
           color: pokemon.color,
           isShiny: pokemon.is_shiny,
           isCaught: pokemon.is_caught,
+          caughtImages: [],
+          caughtDate: "",
+          caughtLocation: [],
         }));
 
         await db.insert(schema.pokemons).values(values);
@@ -92,6 +97,8 @@ export default function RootLayout() {
       console.log("Pokédex data seeded successfully!");
     } catch (error) {
       console.error("Error seeding Pokédex data:", error);
+    } finally {
+      await cleanDirectory(TEMP_DIRECTORY);
     }
   }, [success]);
 
@@ -126,6 +133,7 @@ function RootLayoutNav() {
           <Stack.Screen name="index" options={{ headerShown: false }} />
           <Stack.Screen name="pc" options={{ headerShown: false }} />
           <Stack.Screen name="detail" options={{ headerShown: false }} />
+          <Stack.Screen name="gallery" options={{ headerShown: false }} />
           <Stack.Screen
             name="caught"
             options={{

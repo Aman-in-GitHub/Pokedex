@@ -19,9 +19,9 @@ const pokemons = sqliteTable("pokemons", {
   color: text().notNull(),
   isShiny: integer({ mode: "boolean" }).notNull().default(false),
   isCaught: integer({ mode: "boolean" }).notNull().default(false),
-  caughtLocation: text({ mode: "json" }),
-  caughtDate: text(),
-  caughtImage: text(),
+  caughtDate: text().notNull(),
+  caughtImages: text({ mode: "json" }).notNull(),
+  caughtLocation: text({ mode: "json" }).notNull(),
 });
 
 export default pokemons;
