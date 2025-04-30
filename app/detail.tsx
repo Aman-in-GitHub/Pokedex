@@ -1,9 +1,9 @@
 import {
   Link,
-  Stack,
   useRouter,
   useFocusEffect,
   useLocalSearchParams,
+  Stack,
 } from "expo-router";
 import {
   Text,
@@ -29,9 +29,8 @@ import { useStyles, createStyleSheet } from "react-native-unistyles";
 import Carousel, { ICarouselInstance } from "react-native-reanimated-carousel";
 
 import { lightenColor } from "@/lib/utils";
-import CryIcon from "@/assets/icons/Cry.svg";
-import ArrowLeftIcon from "@/assets/icons/ArrowLeft.svg";
-import ArrowRightIcon from "@/assets/icons/ArrorRight.svg";
+import MusicIcon from "@/assets/icons/Music.svg";
+import ArrowIcon from "@/assets/icons/Arrow.svg";
 import { MAP_STYLE_URL, MAX_STAT_VALUE, POKEMON_STATS } from "@/lib/constants";
 
 const AnimatedImage = Animated.createAnimatedComponent(Image);
@@ -85,7 +84,7 @@ function EvolutionList({
           alignItems: "center",
         }}
       >
-        <ArrowRightIcon width={32} height={32} fill={color} />
+        <ArrowIcon fill={color} width={50} height={50} />
         <Text
           style={{
             fontFamily: "Regular",
@@ -144,7 +143,7 @@ function StatBar({ statKey, label, color, value, index }: any) {
         {
           width: "100%",
           borderRadius: 12,
-          paddingVertical: 8,
+          paddingVertical: 14,
           backgroundColor: lightenColor(color, 0.05),
           position: "relative",
           overflow: "hidden",
@@ -158,9 +157,9 @@ function StatBar({ statKey, label, color, value, index }: any) {
 
       <Text
         style={{
-          fontFamily: "Regular",
+          fontFamily: "Game",
           color: color,
-          fontSize: 16,
+          fontSize: 12,
           zIndex: 1000,
           paddingHorizontal: 16,
         }}
@@ -179,10 +178,12 @@ export default function Detail() {
   const cryPlayer = useAudioPlayer(pokemon.cry);
   const initPlayer = useAudioPlayer(
     pokemon.name === "pikachu"
-      ? require("@/assets/sound/its-pikachu.mp3")
-      : pokemon.legacyCry
-        ? pokemon.legacyCry
-        : pokemon.cry,
+      ? require("@/assets/sound/pikachu.mp3")
+      : pokemon.name === "eevee"
+        ? require("@/assets/sound/eevee.mp3")
+        : pokemon.legacyCry
+          ? pokemon.legacyCry
+          : pokemon.cry,
   );
   const carouselRef = useRef<ICarouselInstance>(null);
   const [activeSection, setActiveSection] = useState(SECTIONS[0]);
@@ -193,9 +194,9 @@ export default function Detail() {
 
   return (
     <>
-      <StatusBar style="light" animated={true} translucent={true} />
-
       <Stack.Screen options={{ headerShown: false }} />
+
+      <StatusBar style="light" animated={true} translucent={true} />
 
       <AnimatedPressable
         style={{
@@ -203,16 +204,20 @@ export default function Detail() {
           position: "absolute",
           top: 25,
           left: 10,
-          padding: 8,
-          overflow: "hidden",
-          borderRadius: 1000,
         }}
         onPress={() => {
           router.back();
         }}
-        android_ripple={{ borderless: false, foreground: true }}
       >
-        <ArrowLeftIcon fill={theme.colors.white} width={32} height={32} />
+        <ArrowIcon
+          fill={theme.colors.white}
+          width={50}
+          height={50}
+          style={{
+            paddingBottom: 2,
+            transform: [{ rotate: "180deg" }],
+          }}
+        />
       </AnimatedPressable>
 
       <View
@@ -305,7 +310,7 @@ export default function Detail() {
               autoPlay={true}
               ref={carouselRef}
               mode="parallax"
-              autoPlayInterval={2000}
+              autoPlayInterval={3000}
               scrollAnimationDuration={1000}
               data={[
                 pokemon.isShiny
@@ -396,6 +401,13 @@ export default function Detail() {
                         .delay(index * 100)
                         .springify()}
                     >
+                      <Text
+                        style={{
+                          fontFamily: "Game",
+                        }}
+                      >
+                        {index}.
+                      </Text>{" "}
                       {desc}
                     </Animated.Text>
                   );
@@ -501,7 +513,7 @@ export default function Detail() {
                   </Text>
                 </Link>
 
-                <CryIcon
+                <MusicIcon
                   width={32}
                   height={32}
                   fill={pokemon.color}
@@ -509,6 +521,7 @@ export default function Detail() {
                     cryPlayer.seekTo(0);
                     cryPlayer.play();
                   }}
+                  style={{ marginRight: -8 }}
                 />
               </View>
             </ScrollView>

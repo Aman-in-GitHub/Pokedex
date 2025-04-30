@@ -41,3 +41,33 @@ export async function savePokemonToDex(
     return null;
   }
 }
+
+export async function verifyWithPokedex(mediaPath: string) {
+  let result = null;
+
+  try {
+    const fileInfo = await FileSystem.getInfoAsync(mediaPath);
+
+    if (!fileInfo.exists) {
+      throw new Error("File does not exist at " + mediaPath);
+    }
+
+    const formData = new FormData();
+    formData.append("mon", {
+      uri: mediaPath,
+      name: `${Date.now()}.jpg`,
+      type: "image/jpeg",
+    } as any);
+
+    const response = await fetch("http://localhost:5000/pokedex", {
+      method: "POST",
+      body: formData,
+    });
+
+    result = await response.json();
+  } catch (error) {
+    console.error("Picture upload failed:", error);
+  }
+
+  return result;
+}

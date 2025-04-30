@@ -1,4 +1,5 @@
 import { Stack } from "expo-router";
+import { count, eq } from "drizzle-orm";
 import { StatusBar } from "expo-status-bar";
 import React, { useState, useRef } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
@@ -8,10 +9,10 @@ import { Text, View, ActivityIndicator, Pressable } from "react-native";
 import Animated, { FadeInDown, FadeOutDown } from "react-native-reanimated";
 
 import { db } from "@/db";
+import Loader from "@/components/Loader";
 import * as schema from "@/db/schema/index";
 import { PAGE_SIZE } from "@/lib/constants";
-import Loader from "@/components/Loader";
-import ArrowUpIcon from "@/assets/icons/ArrowUp.svg";
+import UpIcon from "@/assets/icons/Up.svg";
 import PokedexListItem from "@/components/PokedexListItem";
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
@@ -39,12 +40,23 @@ export default function YourPc() {
           .limit(PAGE_SIZE)
           .offset(pageParam * PAGE_SIZE);
 
+        const totalCountResult = await db
+          .select({ value: count() })
+          .from(schema.pokemons);
+
+        const caughtCountResult = await db
+          .select({ value: count() })
+          .from(schema.pokemons)
+          .where(eq(schema.pokemons.isCaught, true));
+
         if (pageParam === 0) {
           await new Promise((resolve) => setTimeout(resolve, 1500));
         }
 
         return {
           pokemons: results,
+          totalCount: totalCountResult[0].value,
+          caughtCount: caughtCountResult[0].value,
           nextPage: results.length === PAGE_SIZE ? pageParam + 1 : undefined,
         };
       },
@@ -53,9 +65,17 @@ export default function YourPc() {
     });
 
   const allPokemons = data?.pages.flatMap((page) => page.pokemons) || [];
+  const totalCount = data?.pages[0].totalCount;
+  const caughtCount = data?.pages[0].caughtCount;
 
   if (status === "pending") {
-    return <Loader />;
+    return (
+      <>
+        <Stack.Screen options={{ headerShown: false }} />
+
+        <Loader />
+      </>
+    );
   }
 
   return (
@@ -67,6 +87,8 @@ export default function YourPc() {
       <View
         style={{
           paddingVertical: 16,
+          flexDirection: "row",
+          justifyContent: "space-between",
         }}
       >
         <Text
@@ -77,6 +99,15 @@ export default function YourPc() {
         >
           Your PC
         </Text>
+
+        <Text
+          style={{
+            fontSize: 20,
+            fontFamily: "Game",
+          }}
+        >
+          {caughtCount}/{totalCount}
+        </Text>
       </View>
 
       {showScrollToTop && (
@@ -84,18 +115,15 @@ export default function YourPc() {
           style={{
             zIndex: 1000,
             position: "absolute",
-            bottom: 20,
-            right: 20,
-            padding: 10,
-            elevation: 4,
-            borderRadius: 1000,
-            backgroundColor: theme.colors.black,
+            bottom: -15,
+            right: 0,
+            elevation: 5,
           }}
           onPress={scrollToTop}
           entering={FadeInDown.duration(500).springify()}
           exiting={FadeOutDown.duration(500).springify()}
         >
-          <ArrowUpIcon fill={theme.colors.white} width={25} height={25} />
+          <UpIcon fill={theme.colors.white} width={90} height={90} />
         </AnimatedPressable>
       )}
 

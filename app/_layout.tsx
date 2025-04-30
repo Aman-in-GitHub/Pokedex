@@ -124,6 +124,8 @@ function RootLayoutNav() {
       <GestureHandlerRootView style={{ flex: 1 }}>
         <Stack>
           <Stack.Screen name="index" options={{ headerShown: false }} />
+          <Stack.Screen name="pc" options={{ headerShown: false }} />
+          <Stack.Screen name="detail" options={{ headerShown: false }} />
         </Stack>
       </GestureHandlerRootView>
     </QueryClientProvider>

@@ -21,7 +21,7 @@ export default function PokedexListItem({ item, styles }: any) {
         styles.centered,
       ]}
       android_ripple={
-        !item.isCaught ? { borderless: false, foreground: true } : null
+        item.isCaught ? { borderless: false, foreground: true } : null
       }
       onPress={() => {
         if (item.isCaught) {
@@ -32,16 +32,11 @@ export default function PokedexListItem({ item, styles }: any) {
         } else {
           Vibration.vibrate(100);
 
-          router.navigate({
-            pathname: "/detail",
-            params: { item: JSON.stringify(item) },
-          });
-
           ToastAndroid.show("Pokémon not caught yet", ToastAndroid.SHORT);
         }
       }}
     >
-      {!item.isCaught ? (
+      {item.isCaught ? (
         <>
           <View style={{ marginLeft: 16 }}>
             <Text style={{ fontFamily: "Solid", letterSpacing: 1 }}>
