@@ -14,13 +14,13 @@ import {
 } from "react-native-vision-camera";
 import { eq } from "drizzle-orm";
 import { Image } from "expo-image";
-import { useRouter } from "expo-router";
+import { router } from "expo-router";
 import { useAudioPlayer } from "expo-audio";
 import { StatusBar } from "expo-status-bar";
 import React, { useRef, useState } from "react";
-import { Pressable, Text, ToastAndroid, View } from "react-native";
 import { useStyles, createStyleSheet } from "react-native-unistyles";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
+import { Pressable, Text, ToastAndroid, Vibration, View } from "react-native";
 
 import { db } from "@/db";
 import * as schema from "@/db/schema/index";
@@ -30,34 +30,24 @@ Animated.addWhitelistedNativeProps({
   zoom: true,
 });
 const AnimatedCamera = Animated.createAnimatedComponent(Camera);
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 export default function Index() {
-  const router = useRouter();
-  const { styles, theme } = useStyles(stylesheet);
   const cameraRef = useRef<Camera>(null);
   const device = useCameraDevice("back") as CameraDevice;
   const zoom = useSharedValue(device.neutralZoom);
+  const { styles, theme } = useStyles(stylesheet);
   const [isCatching, setIsCatching] = useState(false);
-  const shinyPlayer = useAudioPlayer(require("@/assets/sound/shiny.mp3"));
   const catchPlayer = useAudioPlayer(require("@/assets/sound/catch.mp3"));
-  const caughtPlayer = useAudioPlayer(require("@/assets/sound/caught.mp3"));
   const runawayPlayer = useAudioPlayer(require("@/assets/sound/runaway.mp3"));
 
-  const scale = useSharedValue(1);
+  const pokeballScale = useSharedValue(1);
 
-  const animatedStyle = useAnimatedStyle(() => {
+  const pokeballAnimatedStyle = useAnimatedStyle(() => {
     return {
-      transform: [{ scale: scale.value }],
+      transform: [{ scale: pokeballScale.value }],
     };
   });
-
-  const handlePressIn = () => {
-    scale.value = withTiming(0.9, { duration: 100 });
-  };
-
-  const handlePressOut = () => {
-    scale.value = withTiming(1, { duration: 100 });
-  };
 
   const zoomOffset = useSharedValue(0);
   const gesture = Gesture.Pinch()
@@ -95,7 +85,6 @@ export default function Index() {
       const savedPath = await savePokemonToDex(photo.path);
 
       const res = await verifyWithPokedex(savedPath || "");
-      console.log(res);
 
       if (
         !res ||
@@ -105,26 +94,28 @@ export default function Index() {
         runawayPlayer.seekTo(0);
         runawayPlayer.play();
 
-        ToastAndroid.show("No info about this Pokémon", ToastAndroid.SHORT);
+        ToastAndroid.show(
+          "No info about this Pokémon, Try again",
+          ToastAndroid.SHORT,
+        );
         return;
       }
 
       const isShiny = Math.floor(Math.random() * 1024) + 1 === 1024;
-
-      if (isShiny) {
-        shinyPlayer.seekTo(0);
-        shinyPlayer.play();
-      } else {
-        caughtPlayer.seekTo(0);
-        caughtPlayer.play();
-      }
 
       const pokemon = await db
         .select()
         .from(schema.pokemons)
         .where(eq(schema.pokemons.id, parseInt(res.message[0].dexNumber)));
 
-      console.log(pokemon);
+      router.navigate({
+        pathname: "/caught",
+        params: {
+          item: JSON.stringify(pokemon),
+          shinyStatus: JSON.stringify(isShiny),
+          caughtImage: savedPath,
+        },
+      });
     } catch (error) {
       ToastAndroid.show("Error capturing Pokémon", ToastAndroid.SHORT);
       console.error("Error saving photo:", error);
@@ -377,43 +368,52 @@ export default function Index() {
               },
               styles.shadow,
             ]}
+            disabled={isCatching}
             onPress={() => {
+              Vibration.vibrate(50);
+
               router.navigate("/pc");
             }}
-            disabled={isCatching}
           >
             <Text
               style={{
                 fontFamily: "Game",
               }}
             >
-              YOUR PC
+              Your PC
             </Text>
           </Pressable>
         </View>
 
-        <Pressable
+        <AnimatedPressable
           disabled={isCatching}
-          onPress={capturePokemon}
-          onPressIn={handlePressIn}
-          onPressOut={handlePressOut}
+          onPress={() => {
+            Vibration.vibrate(50);
+
+            capturePokemon();
+          }}
+          onPressIn={() => {
+            pokeballScale.value = withTiming(0.9, { duration: 100 });
+          }}
+          onPressOut={() => {
+            pokeballScale.value = withTiming(1, { duration: 100 });
+          }}
+          style={pokeballAnimatedStyle}
         >
-          <Animated.View style={animatedStyle}>
-            <Image
-              style={{
-                height: 60,
-                width: 60,
-              }}
-              transition={300}
-              contentFit="contain"
-              source={
-                isCatching
-                  ? require("@/assets/images/pokeball-catching.png")
-                  : require("@/assets/images/pokeball.png")
-              }
-            />
-          </Animated.View>
-        </Pressable>
+          <Image
+            style={{
+              height: 60,
+              width: 60,
+            }}
+            transition={300}
+            contentFit="contain"
+            source={
+              isCatching
+                ? require("@/assets/images/pokeball-catching.png")
+                : require("@/assets/images/pokeball.png")
+            }
+          />
+        </AnimatedPressable>
       </View>
     </View>
   );

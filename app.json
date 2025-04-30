@@ -33,6 +33,7 @@
       "expo-router",
       "expo-sqlite",
       "expo-audio",
+      "expo-location",
       "react-native-vision-camera",
       "@maplibre/maplibre-react-native"
     ],

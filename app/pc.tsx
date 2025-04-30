@@ -14,6 +14,7 @@ import * as schema from "@/db/schema/index";
 import { PAGE_SIZE } from "@/lib/constants";
 import UpIcon from "@/assets/icons/Up.svg";
 import PokedexListItem from "@/components/PokedexListItem";
+import { Vibration } from "react-native";
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
@@ -64,9 +65,9 @@ export default function YourPc() {
       initialPageParam: 0,
     });
 
-  const allPokemons = data?.pages.flatMap((page) => page.pokemons) || [];
   const totalCount = data?.pages[0].totalCount;
   const caughtCount = data?.pages[0].caughtCount;
+  const allPokemons = data?.pages.flatMap((page) => page.pokemons) || [];
 
   if (status === "pending") {
     return (
@@ -119,7 +120,11 @@ export default function YourPc() {
             right: 0,
             elevation: 5,
           }}
-          onPress={scrollToTop}
+          onPress={() => {
+            Vibration.vibrate(50);
+
+            scrollToTop();
+          }}
           entering={FadeInDown.duration(500).springify()}
           exiting={FadeOutDown.duration(500).springify()}
         >

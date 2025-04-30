@@ -1,3 +1,4 @@
+import * as Location from "expo-location";
 import * as FileSystem from "expo-file-system";
 
 export function lightenColor(color: string, opacity = 0.2) {
@@ -70,4 +71,48 @@ export async function verifyWithPokedex(mediaPath: string) {
   }
 
   return result;
+}
+
+export async function getCurrentLocation() {
+  let location = await Location.getCurrentPositionAsync({});
+
+  const { longitude, latitude } = location.coords;
+
+  return [longitude, latitude];
+}
+
+export function formatISODate(isoString: string) {
+  const date = new Date(isoString);
+
+  const timeOptions: Intl.DateTimeFormatOptions = {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  };
+  const time = date.toLocaleTimeString("en-US", timeOptions).toLowerCase();
+
+  const day = date.getDate();
+  const monthName = date.toLocaleDateString("en-US", { month: "long" });
+  const year = date.getFullYear();
+
+  const getOrdinal = (n: number) => {
+    if (n > 3 && n < 21) return "th";
+    switch (n % 10) {
+      case 1:
+        return "st";
+      case 2:
+        return "nd";
+      case 3:
+        return "rd";
+      default:
+        return "th";
+    }
+  };
+
+  const dateFormatted = `${day}${getOrdinal(day)} of ${monthName}, ${year}`;
+
+  return {
+    time,
+    date: dateFormatted,
+  };
 }

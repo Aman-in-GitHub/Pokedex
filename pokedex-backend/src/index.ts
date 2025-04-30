@@ -6,12 +6,15 @@ import {
   Type,
 } from "@google/genai";
 import { Hono } from "hono";
+import { logger } from "hono/logger";
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
 const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
 
 const app = new Hono();
+
+app.use(logger());
 
 app.get("/", (c) => {
   return c.text("Pikachu");
@@ -26,7 +29,7 @@ app.post("/pokedex", async (c) => {
       return c.json(
         {
           success: false,
-          message: "Invalid picture, try again",
+          message: "Invalid picture, Try again",
         },
         400,
       );
@@ -69,7 +72,7 @@ app.post("/pokedex", async (c) => {
                   },
                   dexNumber: {
                     type: Type.STRING,
-                    description: "Pokedex number of the pokemon (in number)",
+                    description: "Pokedex number (in number)",
                     nullable: false,
                   },
                 },
@@ -109,12 +112,15 @@ app.post("/pokedex", async (c) => {
       );
     }
 
+    console.log(`Found: ${result[0].dexNumber} - ${result[0].name}`);
+
     return c.json({
       success: true,
       message: result,
     });
   } catch (error) {
     console.error("Error processing request:", error);
+
     return c.json(
       {
         success: false,

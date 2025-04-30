@@ -1,6 +1,6 @@
 import {
   Link,
-  useRouter,
+  router,
   useFocusEffect,
   useLocalSearchParams,
   Stack,
@@ -14,7 +14,6 @@ import {
   Dimensions,
 } from "react-native";
 import Animated, {
-  FadeInLeft,
   FadeInDown,
   useSharedValue,
   useAnimatedStyle,
@@ -28,10 +27,15 @@ import { Camera, MapView } from "@maplibre/maplibre-react-native";
 import { useStyles, createStyleSheet } from "react-native-unistyles";
 import Carousel, { ICarouselInstance } from "react-native-reanimated-carousel";
 
-import { lightenColor } from "@/lib/utils";
+import { formatISODate, lightenColor } from "@/lib/utils";
+import {
+  MAP_STYLE_URL,
+  MAX_STAT_VALUE,
+  POKEMON_STATS,
+  DEFAULT_CAUGHT_LOCATION,
+} from "@/lib/constants";
 import MusicIcon from "@/assets/icons/Music.svg";
 import ArrowIcon from "@/assets/icons/Arrow.svg";
-import { MAP_STYLE_URL, MAX_STAT_VALUE, POKEMON_STATS } from "@/lib/constants";
 
 const AnimatedImage = Animated.createAnimatedComponent(Image);
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
@@ -171,7 +175,6 @@ function StatBar({ statKey, label, color, value, index }: any) {
 }
 
 export default function Detail() {
-  const router = useRouter();
   const { item } = useLocalSearchParams();
   const pokemon = JSON.parse(item as string);
   const { styles, theme } = useStyles(stylesheet);
@@ -206,6 +209,8 @@ export default function Detail() {
           left: 10,
         }}
         onPress={() => {
+          Vibration.vibrate(50);
+
           router.back();
         }}
       >
@@ -261,7 +266,7 @@ export default function Detail() {
                 fontFamily: "Outline",
                 letterSpacing: 2.75,
               }}
-              entering={FadeInLeft.duration(500).springify()}
+              entering={FadeInDown.duration(500).springify()}
             >
               {pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1)}
             </Animated.Text>
@@ -279,7 +284,7 @@ export default function Detail() {
                     },
                     styles.centered,
                   ]}
-                  entering={FadeInLeft.duration(500).springify()}
+                  entering={FadeInDown.duration(500).springify().delay(150)}
                 >
                   <Text
                     style={{
@@ -327,7 +332,7 @@ export default function Detail() {
                   source={item}
                   transition={150}
                   contentFit="contain"
-                  entering={FadeInDown.duration(500).springify()}
+                  entering={FadeInDown.duration(500).springify().delay(300)}
                 />
               )}
             />
@@ -360,6 +365,7 @@ export default function Detail() {
                   }
 
                   Vibration.vibrate(50);
+
                   setActiveSection(section);
                 }}
               >
@@ -398,8 +404,8 @@ export default function Detail() {
                         fontFamily: "Regular",
                       }}
                       entering={FadeInDown.duration(500)
-                        .delay(index * 100)
-                        .springify()}
+                        .springify()
+                        .delay(index * 100 + 450)}
                     >
                       <Text
                         style={{
@@ -575,11 +581,12 @@ export default function Detail() {
                 >
                   <Camera
                     pitch={75}
-                    zoomLevel={15}
+                    zoomLevel={16}
                     animationMode="flyTo"
-                    animationDuration={2000}
+                    animationDuration={3000}
                     defaultSettings={{
-                      centerCoordinate: [139.72921376408274, 35.66076485905221],
+                      centerCoordinate:
+                        pokemon.caughtLocation || DEFAULT_CAUGHT_LOCATION,
                     }}
                   />
                 </MapView>
@@ -598,14 +605,28 @@ export default function Detail() {
                     fontFamily: "Regular",
                   }}
                 >
-                  Time: 2:30 pm
+                  <Text
+                    style={{
+                      color: theme.colors.mutedBlack,
+                    }}
+                  >
+                    Time:{" "}
+                  </Text>
+                  {formatISODate(pokemon.caughtDate).time}
                 </Text>
                 <Text
                   style={{
                     fontFamily: "Regular",
                   }}
                 >
-                  Date: Monday 23rd February
+                  <Text
+                    style={{
+                      color: theme.colors.mutedBlack,
+                    }}
+                  >
+                    Date:{" "}
+                  </Text>
+                  {formatISODate(pokemon.caughtDate).date}
                 </Text>
               </Animated.View>
 

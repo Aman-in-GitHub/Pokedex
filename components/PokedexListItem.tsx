@@ -1,11 +1,9 @@
 import React from "react";
 import { Image } from "expo-image";
-import { useRouter } from "expo-router";
+import { router } from "expo-router";
 import { Text, View, Pressable, Vibration, ToastAndroid } from "react-native";
 
 export default function PokedexListItem({ item, styles }: any) {
-  const router = useRouter();
-
   return (
     <Pressable
       style={[
@@ -30,7 +28,7 @@ export default function PokedexListItem({ item, styles }: any) {
             params: { item: JSON.stringify(item) },
           });
         } else {
-          Vibration.vibrate(100);
+          Vibration.vibrate(150);
 
           ToastAndroid.show("Pokémon not caught yet", ToastAndroid.SHORT);
         }

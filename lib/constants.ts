@@ -1,5 +1,6 @@
 export const PAGE_SIZE = 50;
 export const MAX_STAT_VALUE = 255;
+export const DEFAULT_CAUGHT_LOCATION = [139.72921376408274, 35.66076485905221];
 export const MAP_STYLE_URL = "https://tiles.openfreemap.org/styles/liberty";
 
 export const POKEMON_STATS = [

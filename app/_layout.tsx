@@ -57,7 +57,7 @@ export default function RootLayout() {
 
       setIsSeeding(true);
 
-      console.log("Starting data seed");
+      console.log("Starting data seeding...");
 
       const batchSize = 100;
 
@@ -126,6 +126,19 @@ function RootLayoutNav() {
           <Stack.Screen name="index" options={{ headerShown: false }} />
           <Stack.Screen name="pc" options={{ headerShown: false }} />
           <Stack.Screen name="detail" options={{ headerShown: false }} />
+          <Stack.Screen
+            name="caught"
+            options={{
+              title: "Caught",
+              presentation: "formSheet",
+              gestureDirection: "vertical",
+              animation: "slide_from_bottom",
+              sheetInitialDetentIndex: 0,
+              sheetAllowedDetents: [0.75],
+              sheetCornerRadius: 32,
+              sheetElevation: 32,
+            }}
+          />
         </Stack>
       </GestureHandlerRootView>
     </QueryClientProvider>
