@@ -597,7 +597,7 @@ export default function Detail() {
                 >
                   <Camera
                     pitch={75}
-                    zoomLevel={16}
+                    zoomLevel={18}
                     animationMode="flyTo"
                     animationDuration={3000}
                     defaultSettings={{

@@ -116,13 +116,7 @@ export default function Caught() {
   }
 
   return (
-    <View
-      style={{
-        gap: 20,
-        padding: 16,
-        alignItems: "center",
-      }}
-    >
+    <View style={styles.container}>
       <Text
         style={{
           fontSize: 32,
@@ -190,6 +184,11 @@ export default function Caught() {
 }
 
 const stylesheet = createStyleSheet((theme, rt) => ({
+  container: {
+    gap: 20,
+    padding: 16,
+    alignItems: "center",
+  },
   centered: {
     alignItems: "center",
     justifyContent: "center",

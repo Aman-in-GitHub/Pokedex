@@ -59,12 +59,19 @@ export default function Index() {
 
   useEffect(() => {
     (async () => {
-      if (!hasCameraPermission) {
-        await requestCameraPermission();
-      }
-
       if (!hasLocationPermission) {
         await requestLocationPermission();
+      }
+
+      if (!hasCameraPermission) {
+        const isCameraAllowed = await requestCameraPermission();
+
+        if (!isCameraAllowed) {
+          ToastAndroid.show(
+            "Camera permission is required to capture Pokémon",
+            ToastAndroid.SHORT,
+          );
+        }
       }
     })();
   }, []);
@@ -98,6 +105,7 @@ export default function Index() {
   }
 
   const zoomOffset = useSharedValue(0);
+
   const gesture = Gesture.Pinch()
     .onBegin(() => {
       zoomOffset.value = zoom.value;
@@ -107,7 +115,7 @@ export default function Index() {
       zoom.value = interpolate(
         z,
         [1, 10],
-        [device?.minZoom || 1, device?.maxZoom || 1],
+        [device?.minZoom || 1, device?.maxZoom || 16],
         Extrapolation.CLAMP,
       );
     });
@@ -119,17 +127,13 @@ export default function Index() {
 
   async function capturePokemon() {
     if (!hasCameraPermission) {
-      Vibration.vibrate(150);
-
-      ToastAndroid.show(
-        "Camera permission is required to capture Pokémon.",
-        ToastAndroid.SHORT,
-      );
-
       const isCameraAllowed = await requestCameraPermission();
 
-      if (isCameraAllowed) {
-        router.reload();
+      if (!isCameraAllowed) {
+        ToastAndroid.show(
+          "Camera permission is required to capture Pokémon",
+          ToastAndroid.SHORT,
+        );
       }
 
       return;
@@ -152,7 +156,7 @@ export default function Index() {
     try {
       const tempPath = await savePokemonToDex(photo.path, TEMP_DIRECTORY);
 
-      const res = await verifyWithPokedex(tempPath || "");
+      const res: any = await verifyWithPokedex(tempPath || "");
 
       if (
         !res ||
@@ -330,6 +334,7 @@ export default function Index() {
               style={{
                 height: 175,
                 width: "100%",
+                overflow: "hidden",
               }}
               photo={true}
               enableZoomGesture={true}
@@ -538,9 +543,10 @@ export default function Index() {
 const stylesheet = createStyleSheet((theme, rt) => ({
   container: {
     flex: 1,
-    justifyContent: "space-between",
+    overflow: "hidden",
     paddingHorizontal: 20,
     paddingTop: rt.insets.top,
+    justifyContent: "space-between",
     backgroundColor: theme.colors.dexRed,
   },
   centered: {
@@ -548,11 +554,11 @@ const stylesheet = createStyleSheet((theme, rt) => ({
     justifyContent: "center",
   },
   shadow: {
+    elevation: 5,
     borderWidth: 2,
+    shadowRadius: 0,
+    shadowOpacity: 1,
     borderColor: theme.colors.black,
     shadowColor: theme.colors.black,
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    elevation: 5,
   },
 }));

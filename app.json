@@ -15,7 +15,10 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.amanchand.pokedex"
+      "bundleIdentifier": "com.amanchand.pokedex",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Allow $(PRODUCT_NAME) to access your camera"
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -27,7 +30,9 @@
         "android.permission.CAMERA",
         "android.permission.FOREGROUND_SERVICE",
         "android.permission.ACCESS_FINE_LOCATION",
-        "android.permission.ACCESS_COARSE_LOCATION"
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS"
       ],
       "blockedPermissions": ["android.permission.RECORD_AUDIO"]
     },
@@ -54,7 +59,7 @@
         "origin": false
       },
       "eas": {
-        "projectId": "0be686e3-5dbe-49e3-a8ad-07618934fc50"
+        "projectId": "93883a18-9051-4efd-96eb-394fdf3f8ee0"
       }
     }
   }
