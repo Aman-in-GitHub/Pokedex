@@ -42,8 +42,8 @@ const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 export default function Index() {
   const { styles, theme } = useStyles(stylesheet);
   const cameraRef = useRef<Camera>(null);
-  const device = useCameraDevice("back") as CameraDevice;
-  const zoom = useSharedValue(device ? device.neutralZoom : 1);
+  const device = useCameraDevice("back") || null;
+  const zoom = useSharedValue(device ? device?.neutralZoom : 1);
   const [isCatching, setIsCatching] = useState(false);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const catchPlayer = useAudioPlayer(require("@/assets/sound/catch.mp3"));
@@ -107,7 +107,7 @@ export default function Index() {
       zoom.value = interpolate(
         z,
         [1, 10],
-        [device.minZoom, device.maxZoom],
+        [device?.minZoom || 1, device?.maxZoom || 1],
         Extrapolation.CLAMP,
       );
     });
@@ -323,7 +323,7 @@ export default function Index() {
             transition={150}
             contentFit="cover"
           />
-        ) : hasCameraPermission ? (
+        ) : hasCameraPermission && device ? (
           <GestureDetector gesture={gesture}>
             <AnimatedCamera
               ref={cameraRef}
@@ -332,11 +332,11 @@ export default function Index() {
                 width: "100%",
               }}
               photo={true}
-              device={device}
               enableZoomGesture={true}
+              isActive={!capturedImage}
               photoQualityBalance="quality"
               animatedProps={animatedProps}
-              isActive={!capturedImage}
+              device={device as CameraDevice}
             />
           </GestureDetector>
         ) : (
