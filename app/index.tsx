@@ -43,7 +43,7 @@ export default function Index() {
   const { styles, theme } = useStyles(stylesheet);
   const cameraRef = useRef<Camera>(null);
   const device = useCameraDevice("back") as CameraDevice;
-  const zoom = useSharedValue(device.neutralZoom);
+  const zoom = useSharedValue(device ? device.neutralZoom : 1);
   const [isCatching, setIsCatching] = useState(false);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const catchPlayer = useAudioPlayer(require("@/assets/sound/catch.mp3"));
@@ -336,7 +336,7 @@ export default function Index() {
               enableZoomGesture={true}
               photoQualityBalance="quality"
               animatedProps={animatedProps}
-              isActive={!capturedImage && hasCameraPermission}
+              isActive={!capturedImage}
             />
           </GestureDetector>
         ) : (
