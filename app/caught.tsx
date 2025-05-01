@@ -24,13 +24,13 @@ const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 export default function Caught() {
   const { styles, theme } = useStyles(stylesheet);
+  const [isSaving, setIsSaving] = useState(false);
   const { item, shinyStatus, tempCaughtImage } = useLocalSearchParams();
   const pokemon = JSON.parse(item as string)[0];
   const isShiny = JSON.parse(shinyStatus as string);
   const cryPlayer = useAudioPlayer(
     pokemon.legacyCry ? pokemon.legacyCry : pokemon.cry,
   );
-  const [isSaving, setIsSaving] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -64,7 +64,7 @@ export default function Caught() {
         Speech.stop();
         clearTimeout(tid);
       };
-    }, [pokemon, cryPlayer]),
+    }, []),
   );
 
   async function addToPokedex() {

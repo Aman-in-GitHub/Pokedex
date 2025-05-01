@@ -22,7 +22,14 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.amanchand.pokedex"
+      "package": "com.amanchand.pokedex",
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION"
+      ],
+      "blockedPermissions": ["android.permission.RECORD_AUDIO"]
     },
     "web": {
       "bundler": "metro",
@@ -35,7 +42,8 @@
       "expo-audio",
       "expo-location",
       "react-native-vision-camera",
-      "@maplibre/maplibre-react-native"
+      "@maplibre/maplibre-react-native",
+      "expo-localization"
     ],
     "experiments": {
       "typedRoutes": true,

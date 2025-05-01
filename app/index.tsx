@@ -5,32 +5,37 @@ import Animated, {
   Extrapolation,
   useAnimatedStyle,
   withTiming,
+  withRepeat,
+  cancelAnimation,
 } from "react-native-reanimated";
 import {
   Camera,
   useCameraDevice,
   CameraProps,
   CameraDevice,
+  useCameraPermission,
+  useLocationPermission,
 } from "react-native-vision-camera";
 import { eq } from "drizzle-orm";
 import { Image } from "expo-image";
 import { router } from "expo-router";
 import { useAudioPlayer } from "expo-audio";
 import { StatusBar } from "expo-status-bar";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useStyles, createStyleSheet } from "react-native-unistyles";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import { Pressable, Text, ToastAndroid, Vibration, View } from "react-native";
 
 import { db } from "@/db";
 import * as schema from "@/db/schema/index";
+import { TEMP_DIRECTORY } from "@/lib/constants";
 import GalleryIcon from "@/assets/icons/Gallery.svg";
 import { savePokemonToDex, verifyWithPokedex } from "@/lib/utils";
-import { TEMP_DIRECTORY } from "@/lib/constants";
 
 Animated.addWhitelistedNativeProps({
   zoom: true,
 });
+const AnimatedImage = Animated.createAnimatedComponent(Image);
 const AnimatedCamera = Animated.createAnimatedComponent(Camera);
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
@@ -40,8 +45,31 @@ export default function Index() {
   const device = useCameraDevice("back") as CameraDevice;
   const zoom = useSharedValue(device.neutralZoom);
   const [isCatching, setIsCatching] = useState(false);
+  const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const catchPlayer = useAudioPlayer(require("@/assets/sound/catch.mp3"));
   const runawayPlayer = useAudioPlayer(require("@/assets/sound/runaway.mp3"));
+  const {
+    hasPermission: hasCameraPermission,
+    requestPermission: requestCameraPermission,
+  } = useCameraPermission();
+  const {
+    hasPermission: hasLocationPermission,
+    requestPermission: requestLocationPermission,
+  } = useLocationPermission();
+
+  useEffect(() => {
+    (async () => {
+      if (!hasCameraPermission) {
+        await requestCameraPermission();
+      }
+
+      if (!hasLocationPermission) {
+        await requestLocationPermission();
+      }
+
+      router.reload();
+    })();
+  }, []);
 
   const pokeballScale = useSharedValue(1);
 
@@ -50,6 +78,26 @@ export default function Index() {
       transform: [{ scale: pokeballScale.value }],
     };
   });
+
+  const opacity = useSharedValue(1);
+  const isBlinking = useRef(false);
+
+  const animatedBlinkingStyle = useAnimatedStyle(() => ({
+    opacity: opacity.value,
+  }));
+
+  function startBlinking() {
+    if (!isBlinking.current) {
+      isBlinking.current = true;
+      opacity.value = withRepeat(withTiming(0.5, { duration: 1000 }), -1, true);
+    }
+  }
+
+  function stopBlinking() {
+    isBlinking.current = false;
+    cancelAnimation(opacity);
+    opacity.value = 1;
+  }
 
   const zoomOffset = useSharedValue(0);
   const gesture = Gesture.Pinch()
@@ -72,16 +120,36 @@ export default function Index() {
   );
 
   async function capturePokemon() {
+    if (!hasCameraPermission) {
+      Vibration.vibrate(150);
+
+      ToastAndroid.show(
+        "Camera permission is required to capture Pokémon.",
+        ToastAndroid.SHORT,
+      );
+
+      const isCameraAllowed = await requestCameraPermission();
+
+      if (isCameraAllowed) {
+        router.reload();
+      }
+
+      return;
+    }
+
     if (!cameraRef.current) {
       return;
     }
 
     setIsCatching(true);
+    startBlinking();
 
     const photo = await cameraRef.current.takePhoto();
 
     catchPlayer.seekTo(0);
     catchPlayer.play();
+
+    setCapturedImage(`file://${photo.path}`);
 
     try {
       const tempPath = await savePokemonToDex(photo.path, TEMP_DIRECTORY);
@@ -123,6 +191,8 @@ export default function Index() {
       console.error("Error saving photo:", error);
     } finally {
       setIsCatching(false);
+      setCapturedImage(null);
+      stopBlinking();
     }
   }
 
@@ -245,20 +315,55 @@ export default function Index() {
             ))}
         </View>
 
-        <GestureDetector gesture={gesture}>
-          <AnimatedCamera
-            ref={cameraRef}
+        {capturedImage ? (
+          <Image
             style={{
               height: 175,
               width: "100%",
             }}
-            photo={true}
-            device={device}
-            isActive={true}
-            photoQualityBalance="quality"
-            animatedProps={animatedProps}
+            source={capturedImage}
+            transition={150}
+            contentFit="cover"
           />
-        </GestureDetector>
+        ) : hasCameraPermission ? (
+          <GestureDetector gesture={gesture}>
+            <AnimatedCamera
+              ref={cameraRef}
+              style={{
+                height: 175,
+                width: "100%",
+              }}
+              photo={true}
+              device={device}
+              enableZoomGesture={true}
+              photoQualityBalance="quality"
+              animatedProps={animatedProps}
+              isActive={!capturedImage && hasCameraPermission}
+            />
+          </GestureDetector>
+        ) : (
+          <View
+            style={[
+              {
+                height: 175,
+                width: "100%",
+                backgroundColor: theme.colors.dexRed,
+              },
+              styles.centered,
+            ]}
+          >
+            <Text
+              style={{
+                fontSize: 12,
+                fontFamily: "Game",
+                textAlign: "center",
+                color: theme.colors.black,
+              }}
+            >
+              Camera permission is required to capture Pokémon.
+            </Text>
+          </View>
+        )}
 
         <View
           style={{
@@ -410,11 +515,14 @@ export default function Index() {
           }}
           style={pokeballAnimatedStyle}
         >
-          <Image
-            style={{
-              height: 60,
-              width: 60,
-            }}
+          <AnimatedImage
+            style={[
+              {
+                height: 60,
+                width: 60,
+              },
+              animatedBlinkingStyle,
+            ]}
             transition={150}
             contentFit="contain"
             source={

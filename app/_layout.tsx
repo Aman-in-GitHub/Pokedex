@@ -4,6 +4,7 @@ import "react-native-reanimated";
 import { Stack } from "expo-router";
 import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
+import { PostHogProvider } from "posthog-react-native";
 import { useDrizzleStudio } from "expo-drizzle-studio-plugin";
 import React, { useState, useEffect, useCallback } from "react";
 import { useMigrations } from "drizzle-orm/expo-sqlite/migrator";
@@ -127,28 +128,54 @@ const queryClient = new QueryClient();
 
 function RootLayoutNav() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <GestureHandlerRootView style={{ flex: 1 }}>
-        <Stack>
-          <Stack.Screen name="index" options={{ headerShown: false }} />
-          <Stack.Screen name="pc" options={{ headerShown: false }} />
-          <Stack.Screen name="detail" options={{ headerShown: false }} />
-          <Stack.Screen name="gallery" options={{ headerShown: false }} />
-          <Stack.Screen
-            name="caught"
-            options={{
-              title: "Caught",
-              presentation: "formSheet",
-              gestureDirection: "vertical",
-              animation: "slide_from_bottom",
-              sheetInitialDetentIndex: 0,
-              sheetAllowedDetents: [0.75],
-              sheetCornerRadius: 32,
-              sheetElevation: 32,
-            }}
-          />
-        </Stack>
-      </GestureHandlerRootView>
-    </QueryClientProvider>
+    <PostHogProvider
+      apiKey={process.env.EXPO_PUBLIC_POSTHOG_KEY}
+      options={{
+        host: "https://us.i.posthog.com",
+        enableSessionReplay: true,
+        sessionReplayConfig: {
+          // Password inputs are always masked regardless
+          maskAllTextInputs: true,
+          // Whether images are masked. Default is true.
+          maskAllImages: true,
+          // Capture logs automatically. Default is true.
+          // Android only (Native Logcat only)
+          captureLog: true,
+          // Whether network requests are captured in recordings. Default is true
+          // Only metric-like data like speed, size, and response code are captured.
+          // No data is captured from the request or response body.
+          // iOS only
+          captureNetworkTelemetry: true,
+          // Deboucer delay used to reduce the number of snapshots captured and reduce performance impact. Default is 500ms
+          androidDebouncerDelayMs: 500,
+          // Deboucer delay used to reduce the number of snapshots captured and reduce performance impact. Default is 1000ms
+          iOSdebouncerDelayMs: 1000,
+        },
+      }}
+    >
+      <QueryClientProvider client={queryClient}>
+        <GestureHandlerRootView style={{ flex: 1 }}>
+          <Stack>
+            <Stack.Screen name="index" options={{ headerShown: false }} />
+            <Stack.Screen name="pc" options={{ headerShown: false }} />
+            <Stack.Screen name="detail" options={{ headerShown: false }} />
+            <Stack.Screen name="gallery" options={{ headerShown: false }} />
+            <Stack.Screen
+              name="caught"
+              options={{
+                title: "Caught",
+                presentation: "formSheet",
+                gestureDirection: "vertical",
+                animation: "slide_from_bottom",
+                sheetInitialDetentIndex: 0,
+                sheetAllowedDetents: [0.75],
+                sheetCornerRadius: 32,
+                sheetElevation: 32,
+              }}
+            />
+          </Stack>
+        </GestureHandlerRootView>
+      </QueryClientProvider>
+    </PostHogProvider>
   );
 }

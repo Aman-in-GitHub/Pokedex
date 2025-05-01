@@ -1,6 +1,7 @@
 import React from "react";
 import { sql } from "drizzle-orm";
 import { Image } from "expo-image";
+import { Stack } from "expo-router";
 import { Text, View } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { LegendList } from "@legendapp/list";
@@ -20,7 +21,8 @@ export default function Gallery() {
       const results = await db
         .select()
         .from(schema.pokemons)
-        .where(sql`json_array_length(caught_images) > 0`);
+        .where(sql`json_array_length(caught_images) > 0`)
+        .orderBy(schema.pokemons.id);
 
       const allImages = results.flatMap((pokemon) => {
         const images =
@@ -31,11 +33,9 @@ export default function Gallery() {
         return images.map((imageUri: string) => ({
           id: pokemon.id,
           uri: imageUri,
-          pokemonName: pokemon.name,
+          name: pokemon.name,
         }));
       });
-
-      await new Promise((resolve) => setTimeout(resolve, 1500));
 
       return allImages;
     },
@@ -44,6 +44,8 @@ export default function Gallery() {
   if (status === "pending") {
     return (
       <>
+        <Stack.Screen options={{ headerShown: false }} />
+
         <StatusBar style="dark" animated={true} translucent={true} />
 
         <Loader />

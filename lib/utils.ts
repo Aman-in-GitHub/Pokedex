@@ -33,10 +33,6 @@ export async function savePokemonToDex(
     const destinationPath = `${targetDirectory}${filename}`;
     await FileSystem.copyAsync({ from: sourcePath, to: destinationPath });
 
-    FileSystem.deleteAsync(sourcePath, { idempotent: true }).catch((error) => {
-      console.error("Failed to delete source file:", error);
-    });
-
     return destinationPath;
   } catch (error) {
     console.error("Failed to save photo:", error);
@@ -61,7 +57,7 @@ export async function verifyWithPokedex(mediaPath: string) {
       type: "image/jpeg",
     } as any);
 
-    const response = await fetch("http://localhost:5000/pokedex", {
+    const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/pokedex`, {
       method: "POST",
       body: formData,
     });

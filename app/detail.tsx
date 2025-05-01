@@ -21,9 +21,9 @@ import Animated, {
 import { Image } from "expo-image";
 import { useAudioPlayer } from "expo-audio";
 import { StatusBar } from "expo-status-bar";
-import React, { useState, useEffect, useRef } from "react";
 import { Camera, MapView } from "@maplibre/maplibre-react-native";
 import { useStyles, createStyleSheet } from "react-native-unistyles";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import Carousel, { ICarouselInstance } from "react-native-reanimated-carousel";
 
 import {
@@ -194,19 +194,21 @@ export default function Detail() {
   const shinyPlayer = useAudioPlayer(require("@/assets/sound/shiny.mp3"));
   const caughtPlayer = useAudioPlayer(require("@/assets/sound/caught.mp3"));
 
-  useFocusEffect(() => {
-    if (playCaughtSound) {
-      if (pokemon.isShiny) {
-        shinyPlayer.seekTo(0);
-        shinyPlayer.play();
+  useFocusEffect(
+    useCallback(() => {
+      if (playCaughtSound) {
+        if (pokemon.isShiny) {
+          shinyPlayer.seekTo(0);
+          shinyPlayer.play();
+        } else {
+          caughtPlayer.seekTo(0);
+          caughtPlayer.play();
+        }
       } else {
-        caughtPlayer.seekTo(0);
-        caughtPlayer.play();
+        initPlayer.play();
       }
-    } else {
-      initPlayer.play();
-    }
-  });
+    }, []),
+  );
 
   return (
     <>

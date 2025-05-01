@@ -18,7 +18,7 @@ import PokedexListItem from "@/components/PokedexListItem";
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
-export default function YourPc() {
+export default function YourPC() {
   const { styles, theme } = useStyles(stylesheet);
   const legendListRef = useRef<LegendListRef | null>(null);
   const [showScrollToTop, setShowScrollToTop] = useState(false);
@@ -51,7 +51,7 @@ export default function YourPc() {
           .where(eq(schema.pokemons.isCaught, true));
 
         if (pageParam === 0) {
-          await new Promise((resolve) => setTimeout(resolve, 1500));
+          await new Promise((resolve) => setTimeout(resolve, 1000));
         }
 
         return {
