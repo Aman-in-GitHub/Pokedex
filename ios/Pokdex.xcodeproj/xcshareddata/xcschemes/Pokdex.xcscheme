@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-               BuildableName = "Pokedex.app"
-               BlueprintName = "Pokedex"
-               ReferencedContainer = "container:Pokedex.xcodeproj">
+               BuildableName = "Pokdex.app"
+               BlueprintName = "Pokdex"
+               ReferencedContainer = "container:Pokdex.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -33,9 +33,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "00E356ED1AD99517003FC87E"
-               BuildableName = "PokedexTests.xctest"
-               BlueprintName = "PokedexTests"
-               ReferencedContainer = "container:Pokedex.xcodeproj">
+               BuildableName = "PokdexTests.xctest"
+               BlueprintName = "PokdexTests"
+               ReferencedContainer = "container:Pokdex.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -55,9 +55,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "Pokedex.app"
-            BlueprintName = "Pokedex"
-            ReferencedContainer = "container:Pokedex.xcodeproj">
+            BuildableName = "Pokdex.app"
+            BlueprintName = "Pokdex"
+            ReferencedContainer = "container:Pokdex.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -72,9 +72,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "Pokedex.app"
-            BlueprintName = "Pokedex"
-            ReferencedContainer = "container:Pokedex.xcodeproj">
+            BuildableName = "Pokdex.app"
+            BlueprintName = "Pokdex"
+            ReferencedContainer = "container:Pokdex.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

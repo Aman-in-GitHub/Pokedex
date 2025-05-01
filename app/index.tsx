@@ -66,8 +66,6 @@ export default function Index() {
       if (!hasLocationPermission) {
         await requestLocationPermission();
       }
-
-      router.reload();
     })();
   }, []);
 

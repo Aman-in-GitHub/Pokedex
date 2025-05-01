@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Pokedex",
+    "name": "Pokédex",
     "slug": "pokedex",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -10,8 +10,8 @@
     "newArchEnabled": true,
     "splash": {
       "image": "./assets/images/splash-icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "resizeMode": "cover",
+      "backgroundColor": "#FFFFFF"
     },
     "ios": {
       "supportsTablet": true,
@@ -20,7 +20,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#FFDE00"
       },
       "package": "com.amanchand.pokedex",
       "permissions": [
@@ -41,9 +41,9 @@
       "expo-sqlite",
       "expo-audio",
       "expo-location",
+      "expo-localization",
       "react-native-vision-camera",
-      "@maplibre/maplibre-react-native",
-      "expo-localization"
+      "@maplibre/maplibre-react-native"
     ],
     "experiments": {
       "typedRoutes": true,

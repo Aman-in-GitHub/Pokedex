@@ -7,5 +7,5 @@ export default {
   casing: "snake_case",
   out: "./db/migrations",
   schema: "./db/schema/index.ts",
-  verbose: process.env.EXPO_PUBLIC_DB_LOGS === "true",
+  verbose: process.env.NODE_ENV === "development",
 } satisfies Config;
