@@ -44,7 +44,7 @@ export default function YourPC() {
         .from(schema.pokemons)
         .where(eq(schema.pokemons.isCaught, true));
 
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
       return {
         pokemons: results,
