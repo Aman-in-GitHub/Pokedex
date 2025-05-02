@@ -77,6 +77,7 @@ export default function Caught() {
         "Allow location access to save to Pokédex",
         ToastAndroid.SHORT,
       );
+
       setIsSaving(false);
       return;
     }

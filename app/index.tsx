@@ -1,30 +1,19 @@
 import Animated, {
-  useAnimatedProps,
-  useSharedValue,
-  interpolate,
-  Extrapolation,
-  useAnimatedStyle,
   withTiming,
   withRepeat,
+  useSharedValue,
   cancelAnimation,
+  useAnimatedStyle,
 } from "react-native-reanimated";
-import {
-  Camera,
-  useCameraDevice,
-  CameraProps,
-  CameraDevice,
-  useCameraPermission,
-  useLocationPermission,
-} from "react-native-vision-camera";
 import { eq } from "drizzle-orm";
 import { Image } from "expo-image";
 import { router } from "expo-router";
+import * as Location from "expo-location";
 import { useAudioPlayer } from "expo-audio";
 import { StatusBar } from "expo-status-bar";
-import RNRestart from "react-native-restart";
 import React, { useEffect, useRef, useState } from "react";
+import { CameraView, useCameraPermissions } from "expo-camera";
 import { useStyles, createStyleSheet } from "react-native-unistyles";
-import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import { Pressable, Text, ToastAndroid, Vibration, View } from "react-native";
 
 import { db } from "@/db";
@@ -37,46 +26,23 @@ Animated.addWhitelistedNativeProps({
   zoom: true,
 });
 const AnimatedImage = Animated.createAnimatedComponent(Image);
-const AnimatedCamera = Animated.createAnimatedComponent(Camera);
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 export default function Index() {
   const { styles, theme } = useStyles(stylesheet);
-  const cameraRef = useRef<Camera>(null);
-  const device = useCameraDevice("back") || null;
-  const zoom = useSharedValue(device ? device?.neutralZoom : 1);
+  const cameraRef = useRef<CameraView>(null);
   const [isCatching, setIsCatching] = useState(false);
+  const [permission, requestPermission] = useCameraPermissions();
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const catchPlayer = useAudioPlayer(require("@/assets/sound/catch.mp3"));
   const runawayPlayer = useAudioPlayer(require("@/assets/sound/runaway.mp3"));
-  const {
-    hasPermission: hasCameraPermission,
-    requestPermission: requestCameraPermission,
-  } = useCameraPermission();
-  const {
-    hasPermission: hasLocationPermission,
-    requestPermission: requestLocationPermission,
-  } = useLocationPermission();
 
   useEffect(() => {
     (async () => {
-      if (!hasLocationPermission) {
-        await requestLocationPermission();
-      }
+      await Location.requestForegroundPermissionsAsync();
 
-      if (!hasCameraPermission) {
-        const isCameraAllowed = await requestCameraPermission();
-
-        if (!isCameraAllowed) {
-          ToastAndroid.show(
-            "Camera permission is required to capture Pokémon",
-            ToastAndroid.SHORT,
-          );
-        } else {
-          RNRestart.restart();
-        }
-
-        return;
+      if (!permission?.granted) {
+        await requestPermission();
       }
     })();
   }, []);
@@ -110,59 +76,42 @@ export default function Index() {
     opacity.value = 1;
   }
 
-  const zoomOffset = useSharedValue(0);
-
-  const gesture = Gesture.Pinch()
-    .onBegin(() => {
-      zoomOffset.value = zoom.value;
-    })
-    .onUpdate((event) => {
-      const z = zoomOffset.value * event.scale;
-      zoom.value = interpolate(
-        z,
-        [1, 10],
-        [device?.minZoom || 1, device?.maxZoom || 16],
-        Extrapolation.CLAMP,
-      );
-    });
-
-  const animatedProps = useAnimatedProps<CameraProps>(
-    () => ({ zoom: zoom.value }),
-    [zoom],
-  );
-
   async function capturePokemon() {
-    if (!hasCameraPermission) {
-      const isCameraAllowed = await requestCameraPermission();
+    if (!permission?.granted || !cameraRef.current) {
+      const cameraPermission = await requestPermission();
 
-      if (!isCameraAllowed) {
+      if (!cameraPermission.granted) {
         ToastAndroid.show(
           "Camera permission is required to capture Pokémon",
           ToastAndroid.SHORT,
         );
-      } else {
-        RNRestart.restart();
       }
 
-      return;
-    }
-
-    if (!cameraRef.current) {
       return;
     }
 
     setIsCatching(true);
     startBlinking();
 
-    const photo = await cameraRef.current.takePhoto();
+    const photo = await cameraRef.current.takePictureAsync({
+      quality: 1,
+      shutterSound: false,
+      skipProcessing: true,
+    });
+
+    if (!photo) {
+      setIsCatching(false);
+      stopBlinking();
+      return;
+    }
 
     catchPlayer.seekTo(0);
     catchPlayer.play();
 
-    setCapturedImage(`file://${photo.path}`);
+    setCapturedImage(photo.uri);
 
     try {
-      const tempPath = await savePokemonToDex(photo.path, TEMP_DIRECTORY);
+      const tempPath = await savePokemonToDex(photo.uri, TEMP_DIRECTORY);
 
       const res: any = await verifyWithPokedex(tempPath || "");
 
@@ -330,28 +279,53 @@ export default function Index() {
             style={{
               height: 175,
               width: "100%",
+              borderRadius: 6,
             }}
             transition={150}
             contentFit="cover"
             source={capturedImage}
           />
         ) : (
-          <GestureDetector gesture={gesture}>
-            <AnimatedCamera
-              ref={cameraRef}
-              style={{
-                height: 175,
-                width: "100%",
-                overflow: "hidden",
-              }}
-              photo={true}
-              enableZoomGesture={true}
-              photoQualityBalance="quality"
-              animatedProps={animatedProps}
-              device={device as CameraDevice}
-              isActive={!capturedImage && device !== null}
-            />
-          </GestureDetector>
+          <>
+            {permission?.granted ? (
+              <CameraView
+                ref={cameraRef}
+                style={{
+                  height: 175,
+                  width: "100%",
+                  borderRadius: 6,
+                }}
+                zoom={0}
+                facing="back"
+                mode="picture"
+                animateShutter={false}
+              />
+            ) : (
+              <View
+                style={[
+                  {
+                    padding: 6,
+                    height: 175,
+                    width: "100%",
+                    borderRadius: 6,
+                    backgroundColor: theme.colors.dexRed,
+                  },
+                  styles.centered,
+                ]}
+              >
+                <Text
+                  style={{
+                    fontSize: 12,
+                    fontFamily: "Game",
+                    textAlign: "center",
+                    color: theme.colors.black,
+                  }}
+                >
+                  Camera permission is required to capture Pokémon.
+                </Text>
+              </View>
+            )}
+          </>
         )}
 
         <View
@@ -529,7 +503,6 @@ export default function Index() {
 const stylesheet = createStyleSheet((theme, rt) => ({
   container: {
     flex: 1,
-    overflow: "hidden",
     paddingHorizontal: 20,
     paddingTop: rt.insets.top,
     justifyContent: "space-between",

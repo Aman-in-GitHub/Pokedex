@@ -30,7 +30,9 @@
         "android.permission.CAMERA",
         "android.permission.FOREGROUND_SERVICE",
         "android.permission.ACCESS_FINE_LOCATION",
-        "android.permission.ACCESS_COARSE_LOCATION"
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS"
       ],
       "blockedPermissions": ["android.permission.RECORD_AUDIO"]
     },
@@ -40,12 +42,11 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
+      "expo-audio",
       "expo-router",
       "expo-sqlite",
-      "expo-audio",
       "expo-location",
       "expo-localization",
-      "react-native-vision-camera",
       "@maplibre/maplibre-react-native"
     ],
     "experiments": {
@@ -57,7 +58,7 @@
         "origin": false
       },
       "eas": {
-        "projectId": "93883a18-9051-4efd-96eb-394fdf3f8ee0"
+        "projectId": "b0c51c44-980b-4129-8d6a-ce7c8ceff6ad"
       }
     }
   }
