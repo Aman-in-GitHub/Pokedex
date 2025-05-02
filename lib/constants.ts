@@ -1,4 +1,3 @@
-export const PAGE_SIZE = 50;
 export const MAX_STAT_VALUE = 255;
 export const TEMP_DIRECTORY = "temp";
 export const CAUGHT_IMAGES_DIRECTORY = "caught_images";

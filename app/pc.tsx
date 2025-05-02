@@ -3,17 +3,16 @@ import { count, eq } from "drizzle-orm";
 import { Vibration } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import React, { useState, useRef } from "react";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
+import { Text, View, Pressable } from "react-native";
 import { LegendList, LegendListRef } from "@legendapp/list";
 import { useStyles, createStyleSheet } from "react-native-unistyles";
-import { Text, View, ActivityIndicator, Pressable } from "react-native";
 import Animated, { FadeInDown, FadeOutDown } from "react-native-reanimated";
 
 import { db } from "@/db";
 import Loader from "@/components/Loader";
 import UpIcon from "@/assets/icons/Up.svg";
 import * as schema from "@/db/schema/index";
-import { PAGE_SIZE } from "@/lib/constants";
 import PokedexListItem from "@/components/PokedexListItem";
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
@@ -31,43 +30,33 @@ export default function YourPC() {
     legendListRef.current.scrollToOffset({ animated: true, offset: 0 });
   }
 
-  const { data, status, hasNextPage, fetchNextPage, isFetchingNextPage } =
-    useInfiniteQuery({
-      queryKey: ["pokemons"],
-      queryFn: async ({ pageParam = 0 }) => {
-        const results = await db
-          .select()
-          .from(schema.pokemons)
-          .limit(PAGE_SIZE)
-          .offset(pageParam * PAGE_SIZE);
+  const { data, status } = useQuery({
+    queryKey: ["pokemons"],
+    queryFn: async () => {
+      const results = await db.select().from(schema.pokemons);
 
-        const totalCountResult = await db
-          .select({ value: count() })
-          .from(schema.pokemons);
+      const totalCountResult = await db
+        .select({ value: count() })
+        .from(schema.pokemons);
 
-        const caughtCountResult = await db
-          .select({ value: count() })
-          .from(schema.pokemons)
-          .where(eq(schema.pokemons.isCaught, true));
+      const caughtCountResult = await db
+        .select({ value: count() })
+        .from(schema.pokemons)
+        .where(eq(schema.pokemons.isCaught, true));
 
-        if (pageParam === 0) {
-          await new Promise((resolve) => setTimeout(resolve, 1000));
-        }
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
-        return {
-          pokemons: results,
-          totalCount: totalCountResult[0].value,
-          caughtCount: caughtCountResult[0].value,
-          nextPage: results.length === PAGE_SIZE ? pageParam + 1 : undefined,
-        };
-      },
-      getNextPageParam: (lastPage) => lastPage.nextPage,
-      initialPageParam: 0,
-    });
+      return {
+        pokemons: results,
+        totalCount: totalCountResult[0].value,
+        caughtCount: caughtCountResult[0].value,
+      };
+    },
+  });
 
-  const totalCount = data?.pages[0].totalCount;
-  const caughtCount = data?.pages[0].caughtCount;
-  const allPokemons = data?.pages.flatMap((page) => page.pokemons) || [];
+  const totalCount = data?.totalCount;
+  const caughtCount = data?.caughtCount;
+  const allPokemons = data?.pokemons || [];
 
   if (status === "pending") {
     return (
@@ -149,17 +138,6 @@ export default function YourPC() {
           const offsetY = event.nativeEvent.contentOffset.y;
           setShowScrollToTop(offsetY > 500);
         }}
-        onEndReached={() => {
-          if (hasNextPage && !isFetchingNextPage) {
-            fetchNextPage();
-          }
-        }}
-        onEndReachedThreshold={1}
-        ListFooterComponent={() =>
-          isFetchingNextPage ? (
-            <ActivityIndicator size="large" color={theme.colors.red} />
-          ) : null
-        }
         renderItem={({ item }) => (
           <PokedexListItem item={item} styles={styles} />
         )}
