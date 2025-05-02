@@ -11,9 +11,9 @@ import Animated, { FadeInDown, FadeOutDown } from "react-native-reanimated";
 
 import { db } from "@/db";
 import Loader from "@/components/Loader";
+import UpIcon from "@/assets/icons/Up.svg";
 import * as schema from "@/db/schema/index";
 import { PAGE_SIZE } from "@/lib/constants";
-import UpIcon from "@/assets/icons/Up.svg";
 import PokedexListItem from "@/components/PokedexListItem";
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);

@@ -21,6 +21,7 @@ import { Image } from "expo-image";
 import { router } from "expo-router";
 import { useAudioPlayer } from "expo-audio";
 import { StatusBar } from "expo-status-bar";
+import RNRestart from "react-native-restart";
 import React, { useEffect, useRef, useState } from "react";
 import { useStyles, createStyleSheet } from "react-native-unistyles";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
@@ -71,7 +72,11 @@ export default function Index() {
             "Camera permission is required to capture Pokémon",
             ToastAndroid.SHORT,
           );
+        } else {
+          RNRestart.restart();
         }
+
+        return;
       }
     })();
   }, []);
@@ -84,8 +89,9 @@ export default function Index() {
     };
   });
 
-  const opacity = useSharedValue(1);
   const isBlinking = useRef(false);
+
+  const opacity = useSharedValue(1);
 
   const animatedBlinkingStyle = useAnimatedStyle(() => ({
     opacity: opacity.value,
@@ -134,6 +140,8 @@ export default function Index() {
           "Camera permission is required to capture Pokémon",
           ToastAndroid.SHORT,
         );
+      } else {
+        RNRestart.restart();
       }
 
       return;
@@ -323,11 +331,11 @@ export default function Index() {
               height: 175,
               width: "100%",
             }}
-            source={capturedImage}
             transition={150}
             contentFit="cover"
+            source={capturedImage}
           />
-        ) : hasCameraPermission && device ? (
+        ) : (
           <GestureDetector gesture={gesture}>
             <AnimatedCamera
               ref={cameraRef}
@@ -338,34 +346,12 @@ export default function Index() {
               }}
               photo={true}
               enableZoomGesture={true}
-              isActive={!capturedImage}
               photoQualityBalance="quality"
               animatedProps={animatedProps}
               device={device as CameraDevice}
+              isActive={!capturedImage && device !== null}
             />
           </GestureDetector>
-        ) : (
-          <View
-            style={[
-              {
-                height: 175,
-                width: "100%",
-                backgroundColor: theme.colors.dexRed,
-              },
-              styles.centered,
-            ]}
-          >
-            <Text
-              style={{
-                fontSize: 12,
-                fontFamily: "Game",
-                textAlign: "center",
-                color: theme.colors.black,
-              }}
-            >
-              Camera permission is required to capture Pokémon.
-            </Text>
-          </View>
         )}
 
         <View

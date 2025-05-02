@@ -9,8 +9,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useStyles, createStyleSheet } from "react-native-unistyles";
 
 import { db } from "@/db";
-import * as schema from "@/db/schema/index";
 import Loader from "@/components/Loader";
+import * as schema from "@/db/schema/index";
 
 export default function Gallery() {
   const { styles } = useStyles(stylesheet);

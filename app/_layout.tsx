@@ -13,10 +13,10 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import { db, sqlite } from "@/db";
 import * as schema from "@/db/schema/index";
-import migrations from "@/db/migrations/migrations";
-import POKEMON_DATA from "@/assets/seed.json";
 import { cleanDirectory } from "@/lib/utils";
+import POKEMON_DATA from "@/assets/seed.json";
 import { TEMP_DIRECTORY } from "@/lib/constants";
+import migrations from "@/db/migrations/migrations";
 
 export { ErrorBoundary } from "expo-router";
 
