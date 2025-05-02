@@ -12,6 +12,7 @@ import {
   Vibration,
   Dimensions,
 } from "react-native";
+import { Audio } from "expo-av";
 import Animated, {
   FadeInDown,
   useSharedValue,
@@ -19,7 +20,6 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import { Image } from "expo-image";
-import { useAudioPlayer } from "expo-audio";
 import { StatusBar } from "expo-status-bar";
 import { Camera, MapView } from "@maplibre/maplibre-react-native";
 import { useStyles, createStyleSheet } from "react-native-unistyles";
@@ -177,36 +177,71 @@ export default function Detail() {
   const { styles, theme } = useStyles(stylesheet);
   const { item, isFirstTime = "false" } = useLocalSearchParams();
   const pokemon = JSON.parse(item as string);
-  const playCaughtSound = JSON.parse(isFirstTime as string);
+  const shouldPlayCaughtSound = JSON.parse(isFirstTime as string);
   const pokemonImagesRef = useRef<ICarouselInstance>(null);
   const caughtImagesRef = useRef<ICarouselInstance>(null);
   const [activeSection, setActiveSection] = useState(SECTIONS[0]);
-  const cryPlayer = useAudioPlayer(pokemon.cry);
-  const initPlayer = useAudioPlayer(
-    pokemon.name === "pikachu"
-      ? require("@/assets/sound/pikachu.mp3")
-      : pokemon.name === "eevee"
-        ? require("@/assets/sound/eevee.mp3")
-        : pokemon.legacyCry
-          ? pokemon.legacyCry
-          : pokemon.cry,
-  );
-  const shinyPlayer = useAudioPlayer(require("@/assets/sound/shiny.mp3"));
-  const caughtPlayer = useAudioPlayer(require("@/assets/sound/caught.mp3"));
+  const [crySound, setCrySound] = useState<Audio.Sound | null>(null);
+  const [initSound, setInitSound] = useState<Audio.Sound | null>(null);
+  const [caughtSound, setCaughtSound] = useState<Audio.Sound | null>(null);
+
+  async function playCry() {
+    const { sound } = await Audio.Sound.createAsync({
+      uri: pokemon.cry,
+    });
+
+    setCrySound(sound);
+
+    await sound.playAsync();
+  }
+
+  async function playInitSound() {
+    if (pokemon.name === "pikachu" || pokemon.name === "eevee") {
+      const { sound } = await Audio.Sound.createAsync(
+        pokemon.name === "pikachu"
+          ? require("@/assets/sound/pikachu.mp3")
+          : require("@/assets/sound/eevee.mp3"),
+      );
+
+      setInitSound(sound);
+
+      await sound.playAsync();
+    } else {
+      const { sound } = await Audio.Sound.createAsync({
+        uri: pokemon.legacyCry ? pokemon.legacyCry : pokemon.cry,
+      });
+
+      setInitSound(sound);
+
+      await sound.playAsync();
+    }
+  }
+
+  async function playCaughtSound() {
+    const { sound } = await Audio.Sound.createAsync(
+      pokemon.isShiny
+        ? require("@/assets/sound/shiny.mp3")
+        : require("@/assets/sound/caught.mp3"),
+    );
+
+    setCaughtSound(sound);
+
+    await sound.playAsync();
+  }
 
   useFocusEffect(
     useCallback(() => {
-      if (playCaughtSound) {
-        if (pokemon.isShiny) {
-          shinyPlayer.seekTo(0);
-          shinyPlayer.play();
-        } else {
-          caughtPlayer.seekTo(0);
-          caughtPlayer.play();
-        }
+      if (shouldPlayCaughtSound) {
+        playCaughtSound();
       } else {
-        initPlayer.play();
+        playInitSound();
       }
+
+      return () => {
+        crySound?.unloadAsync();
+        initSound?.unloadAsync();
+        caughtSound?.unloadAsync();
+      };
     }, []),
   );
 
@@ -540,8 +575,7 @@ export default function Detail() {
                   height={32}
                   fill={pokemon.color}
                   onPress={() => {
-                    cryPlayer.seekTo(0);
-                    cryPlayer.play();
+                    playCry();
                   }}
                   style={{ marginRight: -8 }}
                 />

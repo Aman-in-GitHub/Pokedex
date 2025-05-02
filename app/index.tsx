@@ -1,3 +1,4 @@
+import { Audio } from "expo-av";
 import Animated, {
   withTiming,
   withRepeat,
@@ -9,7 +10,6 @@ import { eq } from "drizzle-orm";
 import { Image } from "expo-image";
 import { router } from "expo-router";
 import * as Location from "expo-location";
-import { useAudioPlayer } from "expo-audio";
 import { StatusBar } from "expo-status-bar";
 import React, { useEffect, useRef, useState } from "react";
 import { CameraView, useCameraPermissions } from "expo-camera";
@@ -34,8 +34,28 @@ export default function Index() {
   const [isCatching, setIsCatching] = useState(false);
   const [permission, requestPermission] = useCameraPermissions();
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
-  const catchPlayer = useAudioPlayer(require("@/assets/sound/catch.mp3"));
-  const runawayPlayer = useAudioPlayer(require("@/assets/sound/runaway.mp3"));
+  const [catchSound, setCatchSound] = useState<Audio.Sound | null>(null);
+  const [runawaySound, setRunawaySound] = useState<Audio.Sound | null>(null);
+
+  async function playCatchSound() {
+    const { sound } = await Audio.Sound.createAsync(
+      require("@/assets/sound/catch.mp3"),
+    );
+
+    setCatchSound(sound);
+
+    await sound.playAsync();
+  }
+
+  async function playRunawaySound() {
+    const { sound } = await Audio.Sound.createAsync(
+      require("@/assets/sound/runaway.mp3"),
+    );
+
+    setRunawaySound(sound);
+
+    await sound.playAsync();
+  }
 
   useEffect(() => {
     (async () => {
@@ -45,6 +65,11 @@ export default function Index() {
         await requestPermission();
       }
     })();
+
+    return () => {
+      catchSound?.unloadAsync();
+      runawaySound?.unloadAsync();
+    };
   }, []);
 
   const pokeballScale = useSharedValue(1);
@@ -105,8 +130,7 @@ export default function Index() {
       return;
     }
 
-    catchPlayer.seekTo(0);
-    catchPlayer.play();
+    playCatchSound();
 
     setCapturedImage(photo.uri);
 
@@ -120,8 +144,7 @@ export default function Index() {
         res.message[0].dexNumber === "undefined" ||
         res.message[0].name === "undefined"
       ) {
-        runawayPlayer.seekTo(0);
-        runawayPlayer.play();
+        playRunawaySound();
 
         ToastAndroid.show(
           "No info about this Pokémon, Try again",

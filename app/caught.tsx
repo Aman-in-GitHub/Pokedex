@@ -1,8 +1,8 @@
+import { Audio } from "expo-av";
 import { eq } from "drizzle-orm";
 import { Image } from "expo-image";
 import * as Speech from "expo-speech";
 import * as Location from "expo-location";
-import { useAudioPlayer } from "expo-audio";
 import React, { useCallback, useState } from "react";
 import { Pressable, View, Text } from "react-native";
 import { Vibration, ToastAndroid } from "react-native";
@@ -25,17 +25,24 @@ const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 export default function Caught() {
   const { styles, theme } = useStyles(stylesheet);
   const [isSaving, setIsSaving] = useState(false);
+  const [sound, setSound] = useState<Audio.Sound>();
   const { item, shinyStatus, tempCaughtImage } = useLocalSearchParams();
   const pokemon = JSON.parse(item as string)[0];
   const isShiny = JSON.parse(shinyStatus as string);
-  const cryPlayer = useAudioPlayer(
-    pokemon.legacyCry ? pokemon.legacyCry : pokemon.cry,
-  );
+
+  async function playSound() {
+    const { sound } = await Audio.Sound.createAsync({
+      uri: pokemon.legacyCry ? pokemon.legacyCry : pokemon.cry,
+    });
+
+    setSound(sound);
+
+    await sound.playAsync();
+  }
 
   useFocusEffect(
     useCallback(() => {
-      cryPlayer.seekTo(0);
-      cryPlayer.play();
+      playSound();
 
       const nativeLocations = pokemon.locations.slice(0, 3);
       let locationText = "";
@@ -56,13 +63,14 @@ export default function Caught() {
             : "";
 
         Speech.speak([descLine, statsLine, locLine].filter(Boolean).join(" "), {
-          rate: 1.25,
+          rate: 1.1,
         });
       }, 1500);
 
       return () => {
         Speech.stop();
         clearTimeout(tid);
+        sound?.unloadAsync();
       };
     }, []),
   );
