@@ -68,6 +68,7 @@ export default function RootLayout() {
         const batch = POKEMON_DATA.slice(i, i + batchSize);
 
         const values = batch.map((pokemon) => ({
+          id: pokemon.id,
           name: pokemon.name,
           description: pokemon.description,
           generation: pokemon.generation,
