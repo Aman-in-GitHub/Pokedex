@@ -146,3 +146,7 @@ export async function cleanDirectory(directory: string) {
     console.error(`Error cleaning up temp directory: ${error}`);
   }
 }
+
+export function capitalizeFirstLetter(string: string) {
+  return string.charAt(0).toUpperCase() + string.slice(1);
+}

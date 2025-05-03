@@ -1,24 +1,27 @@
 import { Stack } from "expo-router";
 import { count, eq } from "drizzle-orm";
-import { Vibration } from "react-native";
 import { StatusBar } from "expo-status-bar";
-import React, { useState, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Text, View, Pressable } from "react-native";
+import React, { useState, useRef, useMemo } from "react";
 import { LegendList, LegendListRef } from "@legendapp/list";
 import { useStyles, createStyleSheet } from "react-native-unistyles";
 import Animated, { FadeInDown, FadeOutDown } from "react-native-reanimated";
+import { Text, View, Pressable, ToastAndroid, Vibration } from "react-native";
 
 import { db } from "@/db";
 import Loader from "@/components/Loader";
 import UpIcon from "@/assets/icons/Up.svg";
 import * as schema from "@/db/schema/index";
+import FilterIcon from "@/assets/icons/Filter.svg";
 import PokedexListItem from "@/components/PokedexListItem";
+
+type FilterMode = "all" | "caught" | "uncaught" | "shiny";
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 export default function YourPC() {
   const { styles, theme } = useStyles(stylesheet);
+  const [filter, setFilter] = useState<FilterMode>("all");
   const legendListRef = useRef<LegendListRef | null>(null);
   const [showScrollToTop, setShowScrollToTop] = useState(false);
 
@@ -56,7 +59,22 @@ export default function YourPC() {
 
   const totalCount = data?.totalCount;
   const caughtCount = data?.caughtCount;
-  const allPokemons = data?.pokemons || [];
+  const allPokemons = data?.pokemons;
+
+  const filteredPokemons = useMemo(() => {
+    if (!allPokemons) return [];
+
+    switch (filter) {
+      case "caught":
+        return allPokemons.filter((pokemon) => pokemon.isCaught);
+      case "uncaught":
+        return allPokemons.filter((pokemon) => !pokemon.isCaught);
+      case "shiny":
+        return allPokemons.filter((pokemon) => pokemon.isShiny);
+      default:
+        return allPokemons;
+    }
+  }, [allPokemons, filter]);
 
   if (status === "pending") {
     return (
@@ -91,14 +109,49 @@ export default function YourPC() {
           Your PC
         </Text>
 
-        <Text
+        <Pressable
           style={{
-            fontSize: 20,
-            fontFamily: "Game",
+            gap: 6,
+            flexDirection: "row",
+            alignItems: "center",
+          }}
+          onPress={() => {
+            Vibration.vibrate(50);
+
+            const nextFilter: FilterMode =
+              filter === "all"
+                ? "caught"
+                : filter === "caught"
+                  ? "uncaught"
+                  : filter === "uncaught"
+                    ? "shiny"
+                    : "all";
+
+            const modeLabel =
+              nextFilter === "all"
+                ? "All Pokémon"
+                : nextFilter === "caught"
+                  ? "Caught Pokémon"
+                  : nextFilter === "uncaught"
+                    ? "Uncaught Pokémon"
+                    : "Shiny Pokémon";
+
+            ToastAndroid.show(`Mode: ${modeLabel}`, ToastAndroid.SHORT);
+
+            setFilter(nextFilter);
           }}
         >
-          {caughtCount}/{totalCount}
-        </Text>
+          <Text
+            style={{
+              fontSize: 20,
+              fontFamily: "Game",
+            }}
+          >
+            {caughtCount}/{totalCount}
+          </Text>
+
+          <FilterIcon width={32} height={32} color={theme.colors.black} />
+        </Pressable>
       </View>
 
       {showScrollToTop && (
@@ -122,26 +175,49 @@ export default function YourPC() {
         </AnimatedPressable>
       )}
 
-      <LegendList
-        data={allPokemons}
-        ref={legendListRef}
-        numColumns={2}
-        recycleItems={true}
-        estimatedItemSize={150}
-        keyExtractor={(item) => item.name}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{
-          gap: 12,
-          paddingBottom: 12,
-        }}
-        onScroll={(event) => {
-          const offsetY = event.nativeEvent.contentOffset.y;
-          setShowScrollToTop(offsetY > 500);
-        }}
-        renderItem={({ item }) => (
-          <PokedexListItem item={item} styles={styles} />
-        )}
-      />
+      {filteredPokemons.length > 0 ? (
+        <LegendList
+          key={filter}
+          ref={legendListRef}
+          data={filteredPokemons}
+          numColumns={2}
+          recycleItems={true}
+          estimatedItemSize={150}
+          keyExtractor={(item) => item.name}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{
+            gap: 12,
+            paddingBottom: 12,
+          }}
+          onScroll={(event) => {
+            const offsetY = event.nativeEvent.contentOffset.y;
+            setShowScrollToTop(offsetY > 500);
+          }}
+          renderItem={({ item }) => (
+            <PokedexListItem item={item} styles={styles} />
+          )}
+        />
+      ) : (
+        <View
+          style={[
+            {
+              flex: 1,
+            },
+            styles.centered,
+          ]}
+        >
+          <Text
+            style={{
+              fontSize: 20,
+              letterSpacing: 1.1,
+              fontFamily: "Solid",
+              textAlign: "center",
+            }}
+          >
+            No {filter} Pokémon found
+          </Text>
+        </View>
+      )}
     </View>
   );
 }

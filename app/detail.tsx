@@ -13,165 +13,28 @@ import {
   Dimensions,
 } from "react-native";
 import { Audio } from "expo-av";
-import Animated, {
-  FadeInDown,
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-} from "react-native-reanimated";
 import { Image } from "expo-image";
 import { StatusBar } from "expo-status-bar";
+import React, { useState, useRef, useCallback } from "react";
+import Animated, { FadeInDown } from "react-native-reanimated";
 import { Camera, MapView } from "@maplibre/maplibre-react-native";
 import { useStyles, createStyleSheet } from "react-native-unistyles";
-import React, { useState, useEffect, useRef, useCallback } from "react";
 import Carousel, { ICarouselInstance } from "react-native-reanimated-carousel";
 
 import {
+  SECTIONS,
   MAP_STYLE_URL,
-  MAX_STAT_VALUE,
   POKEMON_STATS,
   DEFAULT_CAUGHT_LOCATION,
 } from "@/lib/constants";
+import StatBar from "@/components/StatBar";
 import MusicIcon from "@/assets/icons/Music.svg";
 import ArrowIcon from "@/assets/icons/Arrow.svg";
-import { formatISODate, lightenColor } from "@/lib/utils";
+import EvolutionList from "@/components/EvolutionList";
+import { formatISODate, capitalizeFirstLetter } from "@/lib/utils";
 
 const AnimatedImage = Animated.createAnimatedComponent(Image);
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
-
-const SECTIONS = ["about", "stats", "location"];
-
-type EvolutionType = {
-  name: string;
-  image: string;
-  evolutionMethod: string;
-};
-
-function EvolutionList({
-  color,
-  firstPokemon,
-  secondPokemon,
-}: {
-  color: string;
-  firstPokemon: EvolutionType;
-  secondPokemon: EvolutionType;
-}) {
-  return (
-    <View
-      style={{
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-      }}
-    >
-      <View style={{ alignItems: "center" }}>
-        <Image
-          transition={150}
-          contentFit="cover"
-          source={firstPokemon.image}
-          style={{ width: 100, height: 100 }}
-        />
-        <Text
-          style={{
-            textAlign: "center",
-            fontFamily: "Regular",
-          }}
-        >
-          {firstPokemon.name.charAt(0).toUpperCase() +
-            firstPokemon.name.slice(1)}
-        </Text>
-      </View>
-
-      <View
-        style={{
-          alignItems: "center",
-        }}
-      >
-        <ArrowIcon fill={color} width={50} height={50} />
-        <Text
-          style={{
-            fontFamily: "Regular",
-          }}
-        >
-          {isNaN(parseInt(secondPokemon.evolutionMethod as string))
-            ? ""
-            : "Level "}
-          {secondPokemon.evolutionMethod}
-        </Text>
-      </View>
-
-      <View style={{ alignItems: "center" }}>
-        <Image
-          transition={150}
-          contentFit="cover"
-          source={secondPokemon.image}
-          style={{ width: 100, height: 100 }}
-        />
-        <Text
-          style={{
-            fontFamily: "Regular",
-            textAlign: "center",
-            marginTop: 5,
-          }}
-        >
-          {secondPokemon.name.charAt(0).toUpperCase() +
-            secondPokemon.name.slice(1)}
-        </Text>
-      </View>
-    </View>
-  );
-}
-
-function StatBar({ label, color, value, index }: any) {
-  const progress = useSharedValue(0);
-
-  const percentage = (value / MAX_STAT_VALUE) * 100;
-
-  useEffect(() => {
-    progress.value = withTiming(percentage, { duration: 1000 });
-  }, [percentage, progress]);
-
-  const animatedStyle = useAnimatedStyle(() => {
-    return {
-      width: `${progress.value}%`,
-      position: "absolute",
-      height: 100,
-      backgroundColor: lightenColor(color, 0.3),
-    };
-  });
-
-  return (
-    <Animated.View
-      style={[
-        {
-          width: "100%",
-          borderRadius: 12,
-          paddingVertical: 14,
-          backgroundColor: lightenColor(color, 0.05),
-          position: "relative",
-          overflow: "hidden",
-        },
-      ]}
-      entering={FadeInDown.duration(500)
-        .delay(index * 100)
-        .springify()}
-    >
-      <Animated.View style={animatedStyle} />
-
-      <Text
-        style={{
-          fontFamily: "Game",
-          color: color,
-          fontSize: 12,
-          zIndex: 1000,
-          paddingHorizontal: 16,
-        }}
-      >
-        {label}: {value}
-      </Text>
-    </Animated.View>
-  );
-}
 
 export default function Detail() {
   const { styles, theme } = useStyles(stylesheet);
@@ -316,7 +179,7 @@ export default function Detail() {
               }}
               entering={FadeInDown.duration(500).springify()}
             >
-              {pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1)}
+              {capitalizeFirstLetter(pokemon.name)}
             </Animated.Text>
 
             <View style={{ gap: 8, flexDirection: "row" }}>
@@ -341,7 +204,7 @@ export default function Detail() {
                       color: theme.colors.white,
                     }}
                   >
-                    {type.charAt(0).toUpperCase() + type.slice(1)}
+                    {capitalizeFirstLetter(type)}
                   </Text>
                 </Animated.View>
               ))}
@@ -434,7 +297,7 @@ export default function Detail() {
                     textDecorationStyle: "solid",
                   }}
                 >
-                  {section.charAt(0).toUpperCase() + section.slice(1)}
+                  {capitalizeFirstLetter(section)}
                 </Text>
               </Pressable>
             ))}
@@ -595,7 +458,6 @@ export default function Detail() {
               {POKEMON_STATS.map(({ key, label, color }, index) => (
                 <StatBar
                   key={key}
-                  statKey={key}
                   label={label}
                   color={color}
                   value={pokemon.stats[key]}

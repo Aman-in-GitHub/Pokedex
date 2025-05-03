@@ -1,16 +1,17 @@
 import React from "react";
 import { sql } from "drizzle-orm";
 import { Image } from "expo-image";
-import { Stack } from "expo-router";
-import { Text, View } from "react-native";
+import { Stack, router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { LegendList } from "@legendapp/list";
 import { useQuery } from "@tanstack/react-query";
+import { Pressable, Text, Vibration, View } from "react-native";
 import { useStyles, createStyleSheet } from "react-native-unistyles";
 
 import { db } from "@/db";
 import Loader from "@/components/Loader";
 import * as schema from "@/db/schema/index";
+import { capitalizeFirstLetter } from "@/lib/utils";
 
 export default function Gallery() {
   const { styles } = useStyles(stylesheet);
@@ -31,11 +32,12 @@ export default function Gallery() {
             : pokemon.caughtImages;
 
         return images.map((imageUri: string) => ({
-          id: pokemon.id,
           uri: imageUri,
-          name: pokemon.name,
+          pokemon: pokemon,
         }));
       });
+
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
       return allImages;
     },
@@ -111,7 +113,7 @@ export default function Gallery() {
           data={data}
           numColumns={2}
           recycleItems={true}
-          estimatedItemSize={150}
+          estimatedItemSize={169}
           keyExtractor={(item) => item.uri}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{
@@ -120,15 +122,39 @@ export default function Gallery() {
           }}
           renderItem={({ item }) => {
             return (
-              <Image
+              <Pressable
                 style={{
-                  height: 150,
-                  width: "100%",
-                  borderRadius: 16,
+                  gap: 6,
                 }}
-                source={item.uri}
-                transition={150}
-              />
+                onPress={() => {
+                  Vibration.vibrate(50);
+
+                  router.navigate({
+                    pathname: "/detail",
+                    params: { item: JSON.stringify(item.pokemon) },
+                  });
+                }}
+              >
+                <Image
+                  style={{
+                    height: 150,
+                    width: "100%",
+                    borderRadius: 16,
+                  }}
+                  source={item.uri}
+                  transition={150}
+                />
+
+                <Text
+                  style={{
+                    fontSize: 9,
+                    fontFamily: "Game",
+                  }}
+                >
+                  # {item.pokemon.id} -{" "}
+                  {capitalizeFirstLetter(item.pokemon.name)}
+                </Text>
+              </Pressable>
             );
           }}
         />

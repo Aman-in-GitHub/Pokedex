@@ -1,4 +1,11 @@
-import { Audio } from "expo-av";
+import {
+  AppState,
+  Pressable,
+  Text,
+  ToastAndroid,
+  Vibration,
+  View,
+} from "react-native";
 import Animated, {
   withTiming,
   withRepeat,
@@ -6,6 +13,7 @@ import Animated, {
   cancelAnimation,
   useAnimatedStyle,
 } from "react-native-reanimated";
+import { Audio } from "expo-av";
 import { eq } from "drizzle-orm";
 import { Image } from "expo-image";
 import { router } from "expo-router";
@@ -14,28 +22,71 @@ import { StatusBar } from "expo-status-bar";
 import React, { useEffect, useRef, useState } from "react";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { useStyles, createStyleSheet } from "react-native-unistyles";
-import { Pressable, Text, ToastAndroid, Vibration, View } from "react-native";
 
 import { db } from "@/db";
 import * as schema from "@/db/schema/index";
 import { TEMP_DIRECTORY } from "@/lib/constants";
+import ZoomInIcon from "@/assets/icons/ZoomIn.svg";
+import ZoomOutIcon from "@/assets/icons/ZoomOut.svg";
 import GalleryIcon from "@/assets/icons/Gallery.svg";
 import { savePokemonToDex, verifyWithPokedex } from "@/lib/utils";
 
-Animated.addWhitelistedNativeProps({
-  zoom: true,
-});
 const AnimatedImage = Animated.createAnimatedComponent(Image);
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 export default function Index() {
   const { styles, theme } = useStyles(stylesheet);
   const cameraRef = useRef<CameraView>(null);
+  const [zoom, setZoom] = useState(0);
   const [isCatching, setIsCatching] = useState(false);
   const [permission, requestPermission] = useCameraPermissions();
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [catchSound, setCatchSound] = useState<Audio.Sound | null>(null);
   const [runawaySound, setRunawaySound] = useState<Audio.Sound | null>(null);
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener("change", (nextAppState) => {
+      if (nextAppState === "background" || nextAppState === "inactive") {
+        setZoom(0);
+      }
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      await Location.requestForegroundPermissionsAsync();
+
+      if (!permission?.granted) {
+        await requestPermission();
+      }
+    })();
+
+    async function checkForPokedexCompletion() {
+      const uncaughtPokemons = await db
+        .select()
+        .from(schema.pokemons)
+        .where(eq(schema.pokemons.isCaught, false));
+
+      const allCaught = uncaughtPokemons.length === 0;
+
+      if (allCaught) {
+        router.navigate({
+          pathname: "/victory",
+        });
+      }
+    }
+
+    checkForPokedexCompletion();
+
+    return () => {
+      catchSound?.unloadAsync();
+      runawaySound?.unloadAsync();
+    };
+  }, []);
 
   async function playCatchSound() {
     const { sound } = await Audio.Sound.createAsync(
@@ -56,21 +107,6 @@ export default function Index() {
 
     await sound.playAsync();
   }
-
-  useEffect(() => {
-    (async () => {
-      await Location.requestForegroundPermissionsAsync();
-
-      if (!permission?.granted) {
-        await requestPermission();
-      }
-    })();
-
-    return () => {
-      catchSound?.unloadAsync();
-      runawaySound?.unloadAsync();
-    };
-  }, []);
 
   const pokeballScale = useSharedValue(1);
 
@@ -99,6 +135,20 @@ export default function Index() {
     isBlinking.current = false;
     cancelAnimation(opacity);
     opacity.value = 1;
+  }
+
+  function handleZoom(type: "+" | "-") {
+    Vibration.vibrate(50);
+
+    if (type === "+") {
+      setZoom((prev) =>
+        parseFloat((prev + (zoom === 0 ? 0.3 : 0.1)).toFixed(1)),
+      );
+    } else {
+      setZoom((prev) =>
+        parseFloat((prev - (zoom === 0.3 ? 0.3 : 0.1)).toFixed(1)),
+      );
+    }
   }
 
   async function capturePokemon() {
@@ -318,11 +368,35 @@ export default function Index() {
                   width: "100%",
                   borderRadius: 6,
                 }}
-                zoom={0}
+                zoom={zoom}
                 facing="back"
                 mode="picture"
                 animateShutter={false}
-              />
+              >
+                <View
+                  style={{
+                    flex: 1,
+                    flexDirection: "row",
+                    alignItems: "flex-end",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <ZoomOutIcon
+                    width={32}
+                    height={32}
+                    fill={theme.colors.white}
+                    onPress={() => handleZoom("-")}
+                    disabled={zoom === 0}
+                  />
+                  <ZoomInIcon
+                    width={32}
+                    height={32}
+                    fill={theme.colors.white}
+                    onPress={() => handleZoom("+")}
+                    disabled={zoom === 1}
+                  />
+                </View>
+              </CameraView>
             ) : (
               <View
                 style={[
@@ -365,12 +439,24 @@ export default function Index() {
               {
                 width: 20,
                 height: 20,
-                backgroundColor: theme.colors.red,
                 borderRadius: 1000,
+                backgroundColor: theme.colors.red,
               },
               styles.shadow,
             ]}
           />
+
+          {zoom !== 0 && (
+            <Text
+              style={{
+                fontSize: 12,
+                fontFamily: "Game",
+              }}
+            >
+              {(zoom / 2) * 10}x
+            </Text>
+          )}
+
           <View
             style={{
               gap: 4,

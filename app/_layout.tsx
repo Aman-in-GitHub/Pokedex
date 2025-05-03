@@ -173,6 +173,19 @@ function RootLayoutNav() {
                 sheetElevation: 32,
               }}
             />
+            <Stack.Screen
+              name="victory"
+              options={{
+                title: "Victory",
+                presentation: "formSheet",
+                gestureDirection: "vertical",
+                animation: "slide_from_bottom",
+                sheetInitialDetentIndex: 0,
+                sheetAllowedDetents: [0.95],
+                sheetCornerRadius: 32,
+                sheetElevation: 32,
+              }}
+            />
           </Stack>
         </GestureHandlerRootView>
       </QueryClientProvider>

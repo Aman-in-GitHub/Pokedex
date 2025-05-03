@@ -1,5 +1,6 @@
 export const MAX_STAT_VALUE = 255;
 export const TEMP_DIRECTORY = "temp";
+export const SECTIONS = ["about", "stats", "location"];
 export const CAUGHT_IMAGES_DIRECTORY = "caught_images";
 export const MAP_STYLE_URL = "https://tiles.openfreemap.org/styles/liberty";
 export const DEFAULT_CAUGHT_LOCATION = [139.72921376408274, 35.66076485905221];

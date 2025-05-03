@@ -21,6 +21,7 @@ async function fetchPokemonDetails(nameOrId) {
     const evolutionResponse = await fetch(speciesData.evolution_chain.url);
     if (!evolutionResponse.ok)
       throw new Error("Failed to fetch evolution data");
+
     const evolutionData = await evolutionResponse.json();
 
     const evolutionChain = [];
@@ -62,6 +63,10 @@ async function fetchPokemonDetails(nameOrId) {
       }
 
       evolutionChain.push({
+        id: parseInt(
+          node.species.url.match(/\/pokemon-species\/(\d+)\//)[1],
+          10,
+        ),
         name: node.species.name,
         image: pokemonImage,
         evolutionMethod: evolutionMethod,

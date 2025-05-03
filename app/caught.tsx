@@ -11,9 +11,10 @@ import { createStyleSheet, useStyles } from "react-native-unistyles";
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 
 import {
-  getCurrentLocation,
-  sanitizeForSpeech,
   savePokemonToDex,
+  sanitizeForSpeech,
+  getCurrentLocation,
+  capitalizeFirstLetter,
 } from "@/lib/utils";
 import { db } from "@/db";
 import * as schema from "@/db/schema/index";
@@ -135,7 +136,7 @@ export default function Caught() {
           color: theme.colors.black,
         }}
       >
-        {pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1)}
+        {capitalizeFirstLetter(pokemon.name)}
       </Text>
 
       <AnimatedImage

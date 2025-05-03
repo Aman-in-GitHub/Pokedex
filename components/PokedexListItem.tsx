@@ -3,6 +3,8 @@ import { Image } from "expo-image";
 import { router } from "expo-router";
 import { Text, View, Pressable, Vibration, ToastAndroid } from "react-native";
 
+import { capitalizeFirstLetter } from "@/lib/utils";
+
 export default function PokedexListItem({ item, styles }: any) {
   return (
     <Pressable
@@ -13,8 +15,8 @@ export default function PokedexListItem({ item, styles }: any) {
           borderRadius: 16,
           overflow: "hidden",
           flexDirection: "row",
-          backgroundColor: item.color,
           paddingHorizontal: 20,
+          backgroundColor: item.color,
         },
         styles.centered,
       ]}
@@ -28,7 +30,7 @@ export default function PokedexListItem({ item, styles }: any) {
             params: { item: JSON.stringify(item) },
           });
         } else {
-          Vibration.vibrate(150);
+          Vibration.vibrate(100);
 
           ToastAndroid.show("Pokémon not caught yet", ToastAndroid.SHORT);
         }
@@ -38,7 +40,7 @@ export default function PokedexListItem({ item, styles }: any) {
         <>
           <View style={{ marginLeft: 16 }}>
             <Text style={{ fontFamily: "Solid", letterSpacing: 1 }}>
-              {item.name.charAt(0).toUpperCase() + item.name.slice(1)}
+              {capitalizeFirstLetter(item.name)}
             </Text>
 
             <View style={{ gap: 6, marginTop: 6 }}>
@@ -56,7 +58,7 @@ export default function PokedexListItem({ item, styles }: any) {
                   ]}
                 >
                   <Text style={{ fontSize: 10, fontFamily: "Regular" }}>
-                    {type.charAt(0).toUpperCase() + type.slice(1)}
+                    {capitalizeFirstLetter(type)}
                   </Text>
                 </View>
               ))}
