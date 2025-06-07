@@ -45,7 +45,6 @@
       "expo-router",
       "expo-sqlite",
       "expo-location",
-      "expo-localization",
       "@maplibre/maplibre-react-native"
     ],
     "experiments": {
