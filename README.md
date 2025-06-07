@@ -2,7 +2,7 @@
 
 A local-first, smooth, interactive Pokémon recognition app built with React Native and Expo. Point your camera at anything and let the app identify which Pokémon it most resembles!
 
-Try it now: [Android apk](https://github.com/Aman-in-GitHub/Pokedex/releases/download/v0.1.0/Pokedex.apk) _it probably won't work_ :(
+Try it now: [Android apk](https://github.com/Aman-in-GitHub/Pokedex/releases/download/v0.2.0/Pokedex.apk) _it probably won't work_ :(
 
 ## Features
 
