@@ -17,7 +17,7 @@ import { Image } from "expo-image";
 import { StatusBar } from "expo-status-bar";
 import React, { useState, useRef, useCallback } from "react";
 import Animated, { FadeInDown } from "react-native-reanimated";
-import { Camera, MapView } from "@maplibre/maplibre-react-native";
+import { Camera, MapView, MarkerView } from "@maplibre/maplibre-react-native";
 import { useStyles, createStyleSheet } from "react-native-unistyles";
 import Carousel, { ICarouselInstance } from "react-native-reanimated-carousel";
 
@@ -47,6 +47,10 @@ export default function Detail() {
   const [crySound, setCrySound] = useState<Audio.Sound | null>(null);
   const [initSound, setInitSound] = useState<Audio.Sound | null>(null);
   const [caughtSound, setCaughtSound] = useState<Audio.Sound | null>(null);
+  const caughtCoordinate = pokemon.caughtLocation || DEFAULT_CAUGHT_LOCATION;
+  const markerImage =
+    pokemon.caughtImages?.[0] ||
+    (pokemon.isShiny ? pokemon.shiny || pokemon.image : pokemon.image);
 
   async function playCry() {
     const { sound } = await Audio.Sound.createAsync({
@@ -497,10 +501,42 @@ export default function Detail() {
                     animationMode="flyTo"
                     animationDuration={3000}
                     defaultSettings={{
-                      centerCoordinate:
-                        pokemon.caughtLocation || DEFAULT_CAUGHT_LOCATION,
+                      centerCoordinate: caughtCoordinate,
                     }}
                   />
+
+                  <MarkerView
+                    coordinate={caughtCoordinate}
+                    anchor={{ x: 0.5, y: 1 }}
+                    allowOverlap={true}
+                  >
+                    <View style={{ alignItems: "center" }}>
+                      {markerImage ? (
+                        <Image
+                          source={{
+                            uri:
+                              typeof markerImage === "string"
+                                ? markerImage
+                                : markerImage.uri,
+                          }}
+                          style={{
+                            width: 30,
+                            height: 30,
+                            borderRadius: 1000,
+                          }}
+                        />
+                      ) : (
+                        <View
+                          style={{
+                            width: 30,
+                            height: 30,
+                            borderRadius: 1000,
+                            backgroundColor: pokemon.color,
+                          }}
+                        />
+                      )}
+                    </View>
+                  </MarkerView>
                 </MapView>
               </Animated.View>
 
