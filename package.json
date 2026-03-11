@@ -10,12 +10,14 @@
     "web": "expo start --web",
     "prebuild": "expo prebuild --clean",
     "lint": "eslint .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "build:eas:android": "eas build --profile production --platform android"
   },
   "dependencies": {
     "@expo/metro-runtime": "~4.0.1",
     "@legendapp/list": "^1.1.4",
     "@maplibre/maplibre-react-native": "^10.4.2",
+    "@rnrepo/expo-config-plugin": "^0.3.0-beta.0",
     "@tanstack/react-query": "^5.90.21",
     "babel-plugin-inline-import": "^3.0.0",
     "babel-plugin-react-compiler": "^19.0.0-beta-ebf51a3-20250411",

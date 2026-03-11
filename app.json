@@ -45,7 +45,8 @@
       "expo-router",
       "expo-sqlite",
       "expo-location",
-      "@maplibre/maplibre-react-native"
+      "@maplibre/maplibre-react-native",
+      "@rnrepo/expo-config-plugin"
     ],
     "experiments": {
       "typedRoutes": true,
