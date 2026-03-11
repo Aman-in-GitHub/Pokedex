@@ -11,7 +11,7 @@ Try it now: [Android apk](https://github.com/Aman-in-GitHub/Pokedex/releases/dow
 - 🖼️ Gallery for all your caught Pokémon
 - 🗺️ Location tracking for caught Pokémon
 - 💾 Local storage for your caught Pokémon
-- 🌟 Shiny Pokémon encounters (1/1024 chance)
+- 🌟 Shiny Pokémon encounters (1/64 chance)
 - 📊 Detailed Pokémon stats and information
 - 🎮 Interactive animations and classic sound effects
 

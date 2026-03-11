@@ -203,7 +203,7 @@ export default function Index() {
         return;
       }
 
-      const isShiny = Math.floor(Math.random() * 1024) + 1 === 1024;
+      const isShiny = Math.floor(Math.random() * 64) + 1 === 64;
 
       const pokemon = await db
         .select()
